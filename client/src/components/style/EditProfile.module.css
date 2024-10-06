@@ -1,0 +1,57 @@
+/* EditProfile.module.css */
+.radioContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .radioLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .radioInput {
+    display: none; /* Hide the default radio input */
+  }
+  
+  .radioCircle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .radioCircle::after {
+    content: '';
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.3s;
+  }
+  
+  .radioCircle.checked::after {
+    transform: scale(1.1);
+  }
+  
+  .bg-blue-100 {
+    background-color: #ebf8ff;
+  }
+  
+  .bg-pink-100 {
+    background-color: #fbd5e8;
+  }
+  
+  .bg-purple-100 {
+    background-color: #e9d8fd;
+  }
+  
+  .bg-neutral-100 {
+    background-color: #f7fafc;
+  }
+  
+  .shadow {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
