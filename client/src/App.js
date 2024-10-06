@@ -6,7 +6,7 @@ import { useContext } from "react";
 import userContext from "./context/userContext";
 
 function App() {
-  const { user } = useContext(userContext);
+  const { token } = useContext(userContext);
   return (
     <div className="App dark:bg-blue-dark">
       <ToastContainer
@@ -18,7 +18,7 @@ function App() {
         draggable
         theme="colored"
       />
-      {user ? <Home /> : <Auth />}
+      {token ? <Home /> : <Auth />}
     </div>
   );
 }
