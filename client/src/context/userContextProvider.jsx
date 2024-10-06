@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import userContext from "./userContext";
 import io from "socket.io-client";
 
-const ENDPOINT = "http://localhost:5000";
 let socket;
 
 const UserProvider = ({ children }) => {
@@ -19,7 +18,7 @@ const UserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUserChat = async () => {
       try {
-        const response = await fetch(`${ENDPOINT}/api/chat/fetch`, {
+        const response = await fetch(`/api/chat/fetch`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -40,9 +39,9 @@ const UserProvider = ({ children }) => {
 
     const fetchUserData = async () => {
       if (token) {
-        setLoading(true)
+        setLoading(true);
         try {
-          const response = await fetch(`${ENDPOINT}/api/user`, {
+          const response = await fetch(`/api/user`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
@@ -52,7 +51,11 @@ const UserProvider = ({ children }) => {
             const userData = await response.json();
             setUser(userData.data);
             await fetchUserChat();
-            socket = io(ENDPOINT);
+            socket = io(
+              `${window.location.protocol}//${window.location.hostname}${
+                window.location.port ? ":" + window.location.port : ""
+              }`
+            );
             socket.emit("setup", userData.data);
           } else {
             handleLogout();
