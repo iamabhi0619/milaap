@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/userModel");
-
+const crypto = require('crypto');
+const { sendOtpEmail } = require("../service/emailOTP");
+let otpStore = {};
 exports.register = async (req, res) => {
   const { name, username, email, password } = req.body;
   try {
@@ -37,3 +39,25 @@ exports.login = async (req, res) => {
       res.status(500).json({ success: false, message: "Server error" });
   }
 };
+exports.otpSend = async (req, res) => {
+  const { email, name } = req.body;
+  const otp = crypto.randomInt(100000, 999999);
+  otpStore[email] = { otp, expires: Date.now() + 600000 };
+  try {
+    await sendOtpEmail(email, name, otp);
+    res.status(200).json({ message: 'OTP sent successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error sending OTP', error });
+  }
+  
+}
+exports.otpVerify = async (req, res) => {
+  const { email, otp } = req.body;
+  const storedOtp = otpStore[email];
+    if (storedOtp && storedOtp.otp === parseInt(otp) && Date.now() < storedOtp.expires) {
+        delete otpStore[email];
+        res.status(200).json({ message: 'OTP verified successfully' });
+    } else {
+        res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+}
