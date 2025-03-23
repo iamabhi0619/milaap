@@ -68,7 +68,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onCreateGroup }) => {
     return () => {
       if (typingTimeout) clearTimeout(typingTimeout);
     };
-  }, [searchTerm]);
+  }, [searchTerm, typingTimeout]);
   const handleUserClick = (id: string) => {
     if (user?.id) {
       createOneToOneChat(user.id, convertMongoIdToUUID(id));
