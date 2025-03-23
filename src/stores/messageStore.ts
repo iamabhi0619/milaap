@@ -19,7 +19,12 @@ interface Message {
 interface MessageStoreState {
   messages: Message[];
   fetchMessages: (chatId: string) => Promise<void>;
-  sendMessage: (chatId: string, text: string, image_url?: string, voice_url?: string) => Promise<void>;
+  sendMessage: (
+    chatId: string,
+    text: string,
+    image_url?: string,
+    voice_url?: string
+  ) => Promise<void>;
   markAsRead: (chatId: string) => Promise<void>;
   handleMessageUpdates: () => () => void;
   resetMessages: () => void;
@@ -109,7 +114,9 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           set((state) => ({
-            messages: [...state.messages, payload.new],
+            messages: state.messages.map((msg) =>
+              msg.id === payload.new.id ? { ...msg, seen_by: payload.new.seen_by } : msg
+            ),
           }));
         }
       )
