@@ -2,33 +2,20 @@ import { v5 as uuidv5 } from "uuid";
 import jwt from "jsonwebtoken";
 import { supabase } from "@/lib/supabase";
 import { create } from "zustand";
-
-interface User {
-  id: string;
-  email: string;
-  name?: string;
-  avatar: string;
-  token: string;
-  blocked: string[];
-}
-
-interface UserState {
-  user: User | null;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  fetchUser: () => Promise<void>;
-  convertMongoIdToUUID: (uuid: string) => string;
-}
+import { UserState } from "@/types/types";
 
 const NAMESPACE = "550e8400-e29b-41d4-a716-446655440000";
 
-function convertMongoIdToUUID(mongoId: string) {
+function convertMongoIdToUUID(mongoId: string): string {
   return uuidv5(mongoId, NAMESPACE);
 }
 
 export const useUserStore = create<UserState>((set) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  let token: string | null = null;
+
+  if (typeof window !== "undefined") {
+    token = localStorage.getItem("token");
+  }
 
   async function fetchUser() {
     if (!token) {
@@ -37,33 +24,35 @@ export const useUserStore = create<UserState>((set) => {
     }
 
     try {
-      // Decode JWT without verification (Client-side)
+      // Decode JWT token without verifying
       const decoded = jwt.decode(token);
       if (!decoded || typeof decoded !== "object" || !decoded._id) {
         console.error("Invalid token, logging out...");
         set({ user: null, isAuthenticated: false });
         return;
       }
+
       const userId = convertMongoIdToUUID(decoded._id);
+
       // Fetch user from Supabase
       const { data: user, error } = await supabase
         .from("users")
         .select("id, email, name, avatar, blocked")
         .eq("id", userId)
         .single();
+
       if (error || !user) {
         console.error("User not found in Supabase:", error?.message);
         set({ user: null, isAuthenticated: false });
         return;
       }
 
-      // Update Zustand state
       set({
         user: {
           id: user.id,
           email: user.email,
           name: user.name || "Unknown User",
-          token,
+          token: token as string,
           avatar: user.avatar || "/default-avatar.png",
           blocked: user.blocked || [],
         },
@@ -76,12 +65,13 @@ export const useUserStore = create<UserState>((set) => {
   }
 
   if (token) {
-    fetchUser();
+    fetchUser().catch((err) => console.error("Error in fetchUser:", err));
   }
 
   return {
     user: null,
     isAuthenticated: false,
+
     login: async (email, password) => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/login`, {
@@ -93,21 +83,19 @@ export const useUserStore = create<UserState>((set) => {
         if (!response.ok) throw new Error("Invalid email or password");
 
         const { token, user } = await response.json();
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
+        if (typeof window !== "undefined") {
+          localStorage.setItem("token", token);
+          localStorage.setItem("user", JSON.stringify(user));
+        }
 
         const userId = convertMongoIdToUUID(user._id);
 
-        // Check if the user exists in Supabase
-        const { data, error } = await supabase
-          .from("users")
-          .select("id")
-          .eq("id", userId)
-          .single();
+        // Check if user exists in Supabase
+        const { data, error } = await supabase.from("users").select("id").eq("id", userId).single();
 
         if (error || !data) {
-          // Insert new user into Supabase
-          await supabase.from("users").insert([
+          // Insert new user if not exists
+          const { error: insertError } = await supabase.from("users").insert([
             {
               id: userId,
               name: user.name,
@@ -116,6 +104,10 @@ export const useUserStore = create<UserState>((set) => {
               blocked: [],
             },
           ]);
+          if (insertError) {
+            console.error("Failed to insert user in Supabase:", insertError.message);
+            throw new Error("User registration failed in Supabase");
+          }
         }
 
         set({
@@ -133,11 +125,15 @@ export const useUserStore = create<UserState>((set) => {
         console.error("Login failed:", error);
       }
     },
+
     logout: () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
       set({ user: null, isAuthenticated: false });
     },
+
     fetchUser,
     convertMongoIdToUUID,
   };

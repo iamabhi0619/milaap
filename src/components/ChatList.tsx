@@ -5,40 +5,38 @@ import { useUserStore } from "@/stores/userStore";
 import Image from "next/image";
 import { Inter } from "next/font/google";
 import SearchBar from "./SearchBar";
+import { EllipsisVertical } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function ChatList() {
   const { chats, fetchChats, changeChat } = useChatStore();
-  const { user } = useUserStore();
+  const { user, logout } = useUserStore();
   const [filter, setFilter] = useState<"all" | "personal" | "group">("all");
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  console.log(chats);
+  const router = useRouter();
 
-
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
   const handalGroup = () => {
     console.log("Groupcreate");
+  };
 
-  }
+  const handleChatClick = (chatId: string) => {
+    changeChat(chatId); // Update chatId in the store
+    router.push(`/chats/${chatId}`); // Navigate to the chat page
+  };
 
   useEffect(() => {
-    console.log("Hellow");
-
     if (user && user.name) {
-      fetchChats({ ...user, name: user.name as string });
+      fetchChats(user.id);
     }
   }, [user, fetchChats]);
 
-
-  // const filteredChats = chats.filter(
-  //   (chat) =>
-  //     (filter === "all" || chat.type === filter) &&
-  //     !chat.blocked.includes(user?.id ?? "") // Don't show chats where the current user is blocked
-  // );
-
   return (
-    <div className="flex flex-col h-screen max-w-sm w-full overflow-y-hidden">
+    <div className="flex flex-col h-screen max-w-lg md:max-w-sm w-full overflow-y-hidden">
       <div className="bg-navyLightest px-4 py-2 space-y-6 pb-14">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -55,6 +53,35 @@ export default function ChatList() {
                 {user?.name}
               </p>
             </div>
+          </div>
+          <div className="relative">
+            <EllipsisVertical
+              className="text-white cursor-pointer hover:text-gray-300"
+              onClick={toggleMenu}
+            />
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-8 w-40 bg-white text-navy rounded-lg shadow-lg overflow-hidden z-50"
+                onMouseLeave={() => setMenuOpen(false)}
+              >
+                <button className="w-full px-4 py-2 text-left cursor-pointer hover:bg-gray-100 flex items-center gap-2" onClick={() => { router.push("/user") }}>
+                  <Image
+                    src={user?.avatar || "https://avatar.iran.liara.run/public"}
+                    alt="Profile"
+                    width={30}
+                    height={30}
+                    className="h-8 w-8 rounded-full "
+                  />
+                  Profile
+                </button>
+                <button
+                  className="w-full px-4 py-2 hover:bg-red-400 hover:text-white text-center border-t border-navyLightest/15 cursor-pointer"
+                  onClick={() => { logout(); router.push("/") }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -91,21 +118,14 @@ export default function ChatList() {
           chats.map((users) => (
             <div
               key={users.id}
-              className={`flex items-center gap-4 m-2 p-3 cursor-pointer border-b border-slateLight hover:bg-gray-50"
-                }`}
-              onClick={() => user && changeChat(users.id)}
+              className="flex items-center gap-4 m-2 p-3 cursor-pointer border-b border-slateLight hover:bg-gray-50"
+              onClick={() => handleChatClick(users.id)} // Use the new handler
             >
               <Image src={users?.avatar || "https://avatar.iran.liara.run/public"} alt={users.chat_name || "Chat Avatar"} width={50} height={50} className="h-12 w-12 rounded-full" />
               <div className="flex-1">
                 <div className="flex justify-between">
                   <p className="text-navy text-lg font-semibold">{users.chat_name}</p>
-                  {/* {chat. > 0 && (
-                    <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
-                      {chat.unreadCount}
-                    </span>
-                  )} */}
                 </div>
-                {/* <p className="text-navyLight text-sm truncate">{chat.lastMessage}</p> */}
               </div>
             </div>
           ))

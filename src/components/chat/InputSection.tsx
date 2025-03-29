@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Mic, Smile, Loader2 } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { useChatStore } from "@/stores/chatStore";
 import { motion } from "framer-motion";
+import { useMessageStore } from "@/stores/messageStore";
 
 const InputSection = () => {
     const [message, setMessage] = useState<string>("");
@@ -10,7 +10,7 @@ const InputSection = () => {
     const [sending, setSending] = useState<boolean>(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-    const { sendMessage } = useChatStore();
+    const { sendMessage } = useMessageStore();
 
     // Handle sending message
     const handleSendMessage = async () => {

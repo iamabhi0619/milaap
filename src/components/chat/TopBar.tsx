@@ -8,6 +8,7 @@ type Props = {
   avatar: string;
   isGroupChat: boolean;
   isTyping: boolean;
+  setView: () => void;
 };
 
 // Wave animation for dots (scaling effect)
@@ -23,7 +24,7 @@ const waveVariants = (delay: number) => ({
   },
 });
 
-const TopBar = ({ chatName, avatar, isGroupChat, isTyping }: Props) => {
+const TopBar = ({ chatName, avatar, isGroupChat, isTyping, setView }: Props) => {
   const DP = avatar ? (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -35,7 +36,7 @@ const TopBar = ({ chatName, avatar, isGroupChat, isTyping }: Props) => {
         alt={chatName}
         height={50}
         width={50}
-        className="rounded-full"
+        className="rounded-full h-10 w-10"
       />
     </motion.div>
   ) : isGroupChat ? (
@@ -45,8 +46,8 @@ const TopBar = ({ chatName, avatar, isGroupChat, isTyping }: Props) => {
   );
 
   return (
-    <div className="flex items-center justify-between p-4 bg-white shadow">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center justify-between p-4 bg-white shadow rounded-b-3xl">
+      <div className="flex items-center gap-2 cursor-pointer">
         {DP}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -89,6 +90,7 @@ const TopBar = ({ chatName, avatar, isGroupChat, isTyping }: Props) => {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         className="cursor-pointer"
+        onClick={() => { setView() }}
       >
         <Menu />
       </motion.div>
