@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 type Props = {
     setView: () => void;
 };
-const UserCanvs = ({ setView }: Props) => {
+const UserCanvas = ({ setView }: Props) => {
     const { chats, chatId } = useChatStore();
     const chat = chats.find((c) => c.id === chatId);
 
@@ -42,4 +42,4 @@ const UserCanvs = ({ setView }: Props) => {
 };
 
 
-export default UserCanvs;
+export default UserCanvas;

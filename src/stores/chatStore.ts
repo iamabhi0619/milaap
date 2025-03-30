@@ -32,8 +32,6 @@ export const useChatStore = create<ChatStoreState>((set) => ({
         return;
       }
 
-      // console.log("Fetched chats:", chatData);
-
       const processedChats = await Promise.all(
         chatData.map(async (chat) => {
           if (!chat.is_group_chat) {
@@ -41,26 +39,20 @@ export const useChatStore = create<ChatStoreState>((set) => ({
               .from("chat_users")
               .select("user_id")
               .eq("chat_id", chat.id);
-
             if (chatUsersError || !chatUsers) {
               console.error("Error fetching chat users:", chatUsersError);
               return chat;
             }
-
             const otherUserId = chatUsers.find((cu) => cu.user_id !== userId)?.user_id;
             if (!otherUserId) {
               console.warn("No other user found for chat:", chat.id);
               return chat;
             }
-            console.log(otherUserId);
-
             const { data: otherUser, error: userError } = await supabase
               .from("users")
               .select("name, avatar")
               .eq("id", otherUserId)
               .single();
-
-            console.log("Other user", otherUser);
 
             if (userError || !otherUser) {
               console.error("Error fetching other user details:", userError);
@@ -86,7 +78,6 @@ export const useChatStore = create<ChatStoreState>((set) => ({
 
   changeChat: (chatId: string) => {
     set({ chatId });
-    console.log(`Chat changed to: ${chatId}`); // Optional: Debugging log
   },
 
   resetChat: () => {

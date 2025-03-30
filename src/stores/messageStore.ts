@@ -1,14 +1,14 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 import { Message, MessageStoreState } from "@/types/types";
+import { useUserStore } from "./userStore";
 
 export const useMessageStore = create<MessageStoreState>((set, get) => ({
   messages: [],
 
   fetchMessages: async (chatId) => {
-    if (!chatId) return; // Ensure chatId is provided
+    if (!chatId) return;
     set({ messages: [] });
-
     const { data: messages, error } = await supabase
       .from("messages")
       .select("*")
@@ -19,53 +19,48 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
       console.error("Error fetching messages:", error);
       return;
     }
-
     set({ messages });
   },
+  sendMessage: async (text, image_url, voice_url) => {
+    const chatId = get().messages[0]?.chat_id;
+    const userId = useUserStore.getState().user?.id; // Fetch user ID from Zustand
 
-  sendMessage: async (
-    text: string | undefined,
-    image_url: string | undefined,
-    voice_url: string | undefined
-  ) => {
-    const chatId = get().chatId; // Use chatId from the store
-    const userId = "some_user_id"; // Replace with actual user ID logic
-
-    if (!chatId || !userId) return;
-
-    const { data, error } = await supabase
-      .from("messages")
-      .insert([
-        {
-          chat_id: chatId,
-          sender_id: userId,
-          text,
-          image_url,
-          voice_url,
-          edited: false,
-          deleted: false,
-          seen_by: [],
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error sending message:", error);
+    if (!chatId || !userId) {
+      console.error("Chat ID or User ID is missing. Cannot send message.");
       return;
     }
-
-    set((state) => ({
-      messages: [...state.messages, data],
-    }));
+    try {
+      const { data, error } = await supabase
+        .from("messages")
+        .insert([
+          {
+            chat_id: chatId,
+            sender_id: userId,
+            text,
+            image_url,
+            voice_url,
+            edited: false,
+            deleted: false,
+            seen_by: [],
+          },
+        ])
+        .select()
+        .single();
+      if (error) {
+        console.error("Error sending message:", error);
+        return;
+      }
+      set((state) => ({
+        messages: [...state.messages],
+      }));
+      // Update latest message in chat
+      await supabase.from("chats").update({ latest_message: data.id }).eq("id", chatId);
+    } catch (err) {
+      console.error("Unexpected error while sending message:", err);
+    }
   },
-
-  markAsRead: async () => {
-    const chatId = "some_chat_id"; // Replace with actual logic
-    const userId = "some_user_id"; // Replace with actual logic
-
+  markAsRead: async (chatId: string, userId: string) => {
     if (!chatId || !userId) return;
-
     const { messages } = get();
     const unseenMessages = messages.filter(
       (msg) => msg.sender_id !== userId && !msg.seen_by.includes(userId)
@@ -74,12 +69,9 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
     if (unseenMessages.length === 0) return;
 
     for (const msg of unseenMessages) {
-      await supabase
-        .from("messages")
-        .update({
-          seen_by: [...msg.seen_by, userId],
-        })
-        .eq("id", msg.id);
+      const updatedSeenBy = [...msg.seen_by, userId]; // Append userId to seen_by array
+
+      await supabase.from("messages").update({ seen_by: updatedSeenBy }).eq("id", msg.id);
     }
 
     set({
@@ -98,25 +90,33 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
-          const newMessage: Message = {
-            id: payload.new.id,
-            chat_id: payload.new.chat_id,
-            sender_id: payload.new.sender_id,
-            text: payload.new.text,
-            image_url: payload.new.image_url,
-            voice_url: payload.new.voice_url,
-            edited: payload.new.edited,
-            deleted: payload.new.deleted,
-            seen_by: payload.new.seen_by,
-            created_at: payload.new.created_at,
-          };
+          const newMessage: Message = payload.new as Message;
           set((state) => ({
             messages: [...state.messages, newMessage],
           }));
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages" },
+        (payload) => {
+          set((state) => ({
+            messages: state.messages.map((msg) =>
+              msg.id === (payload.new as Message).id ? (payload.new as Message) : msg
+            ),
+          }));
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "messages" },
+        (payload) => {
+          set((state) => ({
+            messages: state.messages.filter((msg) => msg.id !== payload.old.id),
+          }));
+        }
+      )
       .subscribe();
-
     return () => supabase.removeChannel(subscription);
   },
 

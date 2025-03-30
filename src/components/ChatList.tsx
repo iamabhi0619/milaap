@@ -15,26 +15,20 @@ export default function ChatList() {
   const { user, logout } = useUserStore();
   const [filter, setFilter] = useState<"all" | "personal" | "group">("all");
   const [menuOpen, setMenuOpen] = useState(false);
-
   const router = useRouter();
-
   const toggleMenu = () => setMenuOpen(!menuOpen);
-
   const handalGroup = () => {
     console.log("Groupcreate");
   };
-
   const handleChatClick = (chatId: string) => {
-    changeChat(chatId); // Update chatId in the store
-    router.push(`/chats/${chatId}`); // Navigate to the chat page
+    changeChat(chatId);
+    router.push(`/chats/${chatId}`);
   };
-
   useEffect(() => {
     if (user && user.name) {
       fetchChats(user.id);
     }
   }, [user, fetchChats]);
-
   return (
     <div className="flex flex-col h-screen max-w-lg md:max-w-sm w-full overflow-y-hidden">
       <div className="bg-navyLightest px-4 py-2 space-y-6 pb-14">
@@ -123,8 +117,9 @@ export default function ChatList() {
             >
               <Image src={users?.avatar || "https://avatar.iran.liara.run/public"} alt={users.chat_name || "Chat Avatar"} width={50} height={50} className="h-12 w-12 rounded-full" />
               <div className="flex-1">
-                <div className="flex justify-between">
+                <div className="flex flex-col -space-y-2">
                   <p className="text-navy text-lg font-semibold">{users.chat_name}</p>
+                  <p className="text-navyLightest/70">{users.latest_message?.text || "No message yet"}</p>
                 </div>
               </div>
             </div>

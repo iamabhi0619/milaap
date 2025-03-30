@@ -9,7 +9,6 @@ const InputSection = () => {
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [sending, setSending] = useState<boolean>(false);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
-
     const { sendMessage } = useMessageStore();
 
     // Handle sending message
@@ -29,6 +28,14 @@ const InputSection = () => {
     // Handle emoji selection
     const handleEmojiClick = (emojiObject: EmojiClickData) => {
         setMessage((prev) => prev + emojiObject.emoji);
+    };
+
+    // Handle key press (Enter to send)
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // Prevents new line on Enter
+            handleSendMessage();
+        }
     };
 
     // Close emoji picker when clicking outside
@@ -68,6 +75,7 @@ const InputSection = () => {
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={handleKeyDown} // Listen for Enter key
                 placeholder="Write a message..."
                 className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 disabled={sending}

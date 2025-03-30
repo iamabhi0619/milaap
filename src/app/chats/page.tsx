@@ -1,6 +1,6 @@
 "use client"
 import ChatNavigation from '@/components/ChatList'
-import MessageCanvas from '@/components/MessageCanvs'
+import MessageCanvas from '@/components/MessageCanvas'
 import React, { useEffect } from 'react'
 import { useRouter } from "next/navigation";
 import { useUserStore } from '@/stores/userStore';
@@ -21,7 +21,7 @@ const Chats = () => {
         <div className='flex w-full h-screen overflow-y-hidden'>
             <ChatNavigation />
             <div className='hidden md:block w-full'>
-                <MessageCanvas chatId={""}/>
+                <MessageCanvas />
             </div>
         </div>
     )

@@ -39,13 +39,13 @@ export default function ProfilePage() {
         try {
             const token = localStorage.getItem("token");
             if (!token) return;
-
             const response = await axios.get<User>(
-                `http://localhost:5050/api/user/profile`, // TODO: Replace with actual API endpoint
+                `${process.env.NEXT_PUBLIC_API_URL}/api/user/profile`,
                 {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
+            console.log(response.data);
 
             setUser(response.data);
         } catch (error) {
@@ -93,10 +93,10 @@ export default function ProfilePage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="py-4 px-4 flex flex-col gap-6 bg-slateLight/20 h-screen overflow-y-auto"
+            className="py-4 px-4 sm:px-8 lg:px-20 flex flex-col gap-6 bg-slateLight/20 min-h-screen items-center justify-center w-full"
         >
             {/* Avatar and Upload With name and email */}
-            <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-3xl shadow-xl">
+            <div className="flex items-center gap-4 bg-white px-6 py-4 rounded-3xl shadow-xl w-full">
                 <div className="flex flex-col items-center relative w-24">
                     <div className="relative group">
                         {imageUploading ? (
@@ -130,58 +130,60 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            {/* User Details */}
-            <div className="flex flex-col gap-4 bg-white p-6 rounded-3xl shadow-xl">
-                {loading ? (
-                    <Loader2 className="w-10 h-10 animate-spin text-gray-500 mx-auto" />
-                ) : (
-                    <>
-                        <motion.p className="text-xl font-bold tracking-wide text-navyLightest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>General</motion.p>
-                        <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
-                            <div className="bg-navy/90 flex items-center text-white rounded-full p-2">
-                                <BookUser size={25} fill="#0a192f" />
-                            </div>
-                            <p className="text-lg font-semibold">Bio</p>
-                            <p>{user?.bio || "N/A"}</p>
-                        </motion.div>
-                        <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-                            <p className="bg-navy/90 flex items-center text-white rounded-full p-2">{user?.gender === 'male' ? <Mars size={25} fill="#0a192f" /> : <Venus size={25} fill="#0a192f" />}</p>
-                            <p className="text-lg font-semibold uppercase">{user?.gender || "N/A"}</p>
-                        </motion.div>
-                        <motion.div className="bg-slate-100 p-4 rounded-lg shadow space-y-3" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7 }}>
-                            <p className="text-lg font-semibold">Account Details</p>
-                            <p>{user?.isVerified ? <span className="bg-green text-navy px-4 py-1 font-semibold rounded-3xl">Verified</span> : 'No'}</p>
-                            <p className="flex flex-col">Last Login: <span>{moment(user?.lastLogin || null).format("MMMM Do YYYY, h:mm a")}</span></p>
-                            <p>Created At: {moment(user?.createdAt || null).format("MMMM Do YYYY")}</p>
-                        </motion.div>
-                    </>
-                )}
-            </div>
-            <div className="flex flex-col gap-4 bg-white p-6 rounded-3xl shadow-xl">
-                {loading ? (
-                    <Loader2 className="w-10 h-10 animate-spin text-gray-500 mx-auto" />
-                ) : (
-                    <>
-                        <motion.p className="text-xl font-bold tracking-wide text-navyLightest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>General</motion.p>
-                        <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
-                            <div className="bg-navy/90 flex items-center text-white rounded-full p-2">
-                                <BookUser size={25} fill="#0a192f" />
-                            </div>
-                            <p className="text-lg font-semibold">Bio</p>
-                            <p>{user?.bio || "N/A"}</p>
-                        </motion.div>
-                        <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
-                            <p className="bg-navy/90 flex items-center text-white rounded-full p-2">{user?.gender === 'male' ? <Mars size={25} fill="#0a192f" /> : <Venus size={25} fill="#0a192f" />}</p>
-                            <p className="text-lg font-semibold uppercase">{user?.gender || "N/A"}</p>
-                        </motion.div>
-                        <motion.div className="bg-slate-100 p-4 rounded-lg shadow space-y-3" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7 }}>
-                            <p className="text-lg font-semibold">Account Details</p>
-                            <p>{user?.isVerified ? <span className="bg-green text-navy px-4 py-1 font-semibold rounded-3xl">Verified</span> : 'No'}</p>
-                            <p className="flex flex-col">Last Login: <span>{moment(user?.lastLogin || null).format("MMMM Do YYYY, h:mm a")}</span></p>
-                            <p>Created At: {moment(user?.createdAt || null).format("MMMM Do YYYY")}</p>
-                        </motion.div>
-                    </>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                {/* User Details */}
+                <div className="flex flex-col gap-4 bg-white p-6 rounded-3xl shadow-xl">
+                    {loading ? (
+                        <Loader2 className="w-10 h-10 animate-spin text-gray-500 mx-auto" />
+                    ) : (
+                        <>
+                            <motion.p className="text-xl font-bold tracking-wide text-navyLightest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>General</motion.p>
+                            <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
+                                <div className="bg-navy/90 flex items-center text-white rounded-full p-2">
+                                    <BookUser size={25} fill="#0a192f" />
+                                </div>
+                                <p className="text-lg font-semibold">Bio</p>
+                                <p>{user?.bio || "N/A"}</p>
+                            </motion.div>
+                            <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+                                <p className="bg-navy/90 flex items-center text-white rounded-full p-2">{user?.gender === 'male' ? <Mars size={25} fill="#0a192f" /> : <Venus size={25} fill="#0a192f" />}</p>
+                                <p className="text-lg font-semibold uppercase">{user?.gender || "N/A"}</p>
+                            </motion.div>
+                            <motion.div className="bg-slate-100 p-4 rounded-lg shadow space-y-3" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7 }}>
+                                <p className="text-lg font-semibold">Account Details</p>
+                                <p>{user?.isVerified ? <span className="bg-green text-navy px-4 py-1 font-semibold rounded-3xl">Verified</span> : 'No'}</p>
+                                <p className="flex flex-col">Last Login: <span>{moment(user?.lastLogin || null).format("MMMM Do YYYY, h:mm a")}</span></p>
+                                <p>Created At: {moment(user?.createdAt || null).format("MMMM Do YYYY")}</p>
+                            </motion.div>
+                        </>
+                    )}
+                </div>
+                <div className="flex flex-col gap-4 bg-white p-6 rounded-3xl shadow-xl">
+                    {loading ? (
+                        <Loader2 className="w-10 h-10 animate-spin text-gray-500 mx-auto" />
+                    ) : (
+                        <>
+                            <motion.p className="text-xl font-bold tracking-wide text-navyLightest" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>Preference</motion.p>
+                            <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
+                                <div className="bg-navy/90 flex items-center text-white rounded-full p-2">
+                                    <BookUser size={25} fill="#0a192f" />
+                                </div>
+                                <p className="text-lg font-semibold">Bio</p>
+                                <p>{user?.bio || "N/A"}</p>
+                            </motion.div>
+                            <motion.div className="flex items-center gap-3 bg-slate-100 p-4 rounded-lg shadow" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+                                <p className="bg-navy/90 flex items-center text-white rounded-full p-2">{user?.gender === 'male' ? <Mars size={25} fill="#0a192f" /> : <Venus size={25} fill="#0a192f" />}</p>
+                                <p className="text-lg font-semibold uppercase">{user?.gender || "N/A"}</p>
+                            </motion.div>
+                            <motion.div className="bg-slate-100 p-4 rounded-lg shadow space-y-3" initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7 }}>
+                                <p className="text-lg font-semibold">Account Details</p>
+                                <p>{user?.isVerified ? <span className="bg-green text-navy px-4 py-1 font-semibold rounded-3xl">Verified</span> : 'No'}</p>
+                                <p className="flex flex-col">Last Login: <span>{moment(user?.lastLogin || null).format("MMMM Do YYYY, h:mm a")}</span></p>
+                                <p>Created At: {moment(user?.createdAt || null).format("MMMM Do YYYY")}</p>
+                            </motion.div>
+                        </>
+                    )}
+                </div>
             </div>
         </motion.div>
     );
