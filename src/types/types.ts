@@ -119,7 +119,7 @@ export interface MessageStoreState {
   messages: Message[];
   fetchMessages: (chatId: string) => Promise<void>;
   sendMessage: (text: string, image_url?: string, voice_url?: string) => Promise<void>;
-  markAsRead: (chatId: string, userId: string) => Promise<void>;
+  markAsRead: (chatId: string) => Promise<void>;
   handleMessageUpdates: () => () => void;
   resetMessages: () => void;
 }

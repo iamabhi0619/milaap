@@ -2,22 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { useUserStore } from "@/stores/userStore";
-import { useChatStore } from "@/stores/chatStore";
+import ReactMarkdown from "react-markdown";
+import { useUserStore } from "@/stores/userStoretemp";
+import { useChatStore } from "@/stores/chatStoretemp";
 import { useMessageStore } from "@/stores/messageStore";
 import TopBar from "./chat/TopBar";
 import InputSection from "./chat/InputSection";
 import UserCanvas from "./UserCanvas";
 import { Message, Chat } from "@/types/types";
 import formatMessageTime from "@/lib/dateformat";
-
 const MessageCanvas = () => {
     const [loading, setLoading] = useState(false);
     const [isView, setIsView] = useState(false);
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const params = useParams();
     const chatIdFromUrl = params.chatId as string;
-
     const {
         chatId,
         chats,
@@ -26,12 +25,10 @@ const MessageCanvas = () => {
     const {
         messages,
         fetchMessages,
-        handleMessageUpdates
+        handleMessageUpdates,
+        markAsRead
     } = useMessageStore();
     const { user } = useUserStore();
-
-    console.log("MessageCanvas Rendered", messages); //TODO Remove this line in production
-
     const selectedChat = useMemo(
         () => chats.find((chat: Chat) => chat.id === chatId),
         [chats, chatId]
@@ -45,7 +42,7 @@ const MessageCanvas = () => {
         if (id === "null") return;
         changeChat(id);
         fetchMessages(id);
-    }, [chatId, changeChat, fetchMessages, id]);
+    }, [chatId, changeChat, fetchMessages, id, markAsRead]);
     // Subscribe to real-time updates
     useEffect(() => {
         if (!chatId) return;
@@ -107,7 +104,7 @@ const MessageCanvas = () => {
                         return (
                             <div key={msg.id} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
                                 <div className={`max-w-xs p-3 rounded-lg ${isUserMessage ? "bg-navyLight text-white" : "bg-white text-gray-900"} shadow`}>
-                                    {msg.text && <p>{msg.text}</p>}
+                                    {msg.text && <ReactMarkdown>{msg.text}</ReactMarkdown>}
                                     {msg.voice_url && <audio controls src={msg.voice_url} className="w-40 h-10"></audio>}
                                     <span className={`text-xs font-semibold tracking-wide text-right flex items-center gap-1 ${isUserMessage ? "justify-end text-slateLight" : "justify-start text-navy/60"}`}>
                                         {formatMessageTime(msg.created_at)}

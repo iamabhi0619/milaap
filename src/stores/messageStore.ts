@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
 import { Message, MessageStoreState } from "@/types/types";
-import { useUserStore } from "./userStore";
+import { useUserStore } from "./userStoretemp";
 
 export const useMessageStore = create<MessageStoreState>((set, get) => ({
   messages: [],
@@ -9,6 +9,8 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
   fetchMessages: async (chatId) => {
     if (!chatId) return;
     set({ messages: [] });
+    const userId = useUserStore.getState().user?.id;
+
     const { data: messages, error } = await supabase
       .from("messages")
       .select("*")
@@ -20,10 +22,14 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
       return;
     }
     set({ messages });
+
+    // Mark messages as read after fetching
+    if (userId) await get().markAsRead(chatId);
   },
+
   sendMessage: async (text, image_url, voice_url) => {
     const chatId = get().messages[0]?.chat_id;
-    const userId = useUserStore.getState().user?.id; // Fetch user ID from Zustand
+    const userId = useUserStore.getState().user?.id;
 
     if (!chatId || !userId) {
       console.error("Chat ID or User ID is missing. Cannot send message.");
@@ -53,24 +59,25 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
       set((state) => ({
         messages: [...state.messages],
       }));
-      // Update latest message in chat
       await supabase.from("chats").update({ latest_message: data.id }).eq("id", chatId);
     } catch (err) {
       console.error("Unexpected error while sending message:", err);
     }
   },
-  markAsRead: async (chatId: string, userId: string) => {
-    if (!chatId || !userId) return;
+
+  markAsRead: async (chatId: string) => {
+    if (!chatId) return;
+    const userId = useUserStore.getState().user?.id;
+    if (!userId) return;
+
     const { messages } = get();
     const unseenMessages = messages.filter(
       (msg) => msg.sender_id !== userId && !msg.seen_by.includes(userId)
     );
-
     if (unseenMessages.length === 0) return;
 
     for (const msg of unseenMessages) {
-      const updatedSeenBy = [...msg.seen_by, userId]; // Append userId to seen_by array
-
+      const updatedSeenBy = [...msg.seen_by, userId];
       await supabase.from("messages").update({ seen_by: updatedSeenBy }).eq("id", msg.id);
     }
 
@@ -89,11 +96,15 @@ export const useMessageStore = create<MessageStoreState>((set, get) => ({
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        (payload) => {
+        async (payload) => {
           const newMessage: Message = payload.new as Message;
-          set((state) => ({
-            messages: [...state.messages, newMessage],
-          }));
+          set((state) => ({ messages: [...state.messages, newMessage] }));
+
+          // Mark as read when a new message is received
+          const userId = useUserStore.getState().user?.id;
+          if (userId && newMessage.chat_id) {
+            await get().markAsRead(newMessage.chat_id);
+          }
         }
       )
       .on(

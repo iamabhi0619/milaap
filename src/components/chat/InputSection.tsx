@@ -1,15 +1,64 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Send, Mic, Smile, Loader2 } from "lucide-react";
+"use client";
+
+import React, { useState, useRef } from "react";
+import { Send, Mic, Smile, Bold, Italic, Strikethrough, Code, Loader2 } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { motion } from "framer-motion";
 import { useMessageStore } from "@/stores/messageStore";
+
+const formattingOptions = [
+    { symbol: "**", label: "Bold", icon: <Bold /> },
+    { symbol: "_", label: "Italic", icon: <Italic /> },
+    { symbol: "~", label: "Strikethrough", icon: <Strikethrough /> },
+    { symbol: "`", label: "Monospace", icon: <Code /> },
+];
 
 const InputSection = () => {
     const [message, setMessage] = useState<string>("");
     const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
     const [sending, setSending] = useState<boolean>(false);
+    const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
     const emojiPickerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const { sendMessage } = useMessageStore();
+
+    // Apply Formatting to Selected Text
+    const applyFormatting = (symbol: string) => {
+        if (!inputRef.current || !selection) return;
+        const { start, end } = selection;
+        if (start === end) return;
+        const selectedText = message.substring(start, end);
+        const newText =
+            message.substring(0, start) +
+            `${symbol}${selectedText}${symbol}` +
+            message.substring(end);
+        setMessage(newText);
+        setSelection(null); // Hide menu after applying format
+    };
+
+    // Handle text selection
+    const handleSelection = () => {
+        if (!inputRef.current) return;
+        const input = inputRef.current;
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        if (start !== end) {
+            setSelection({ start, end });
+        } else {
+            setSelection(null);
+        }
+    };
+
+    // Handle key press (Enter to send, Tab to insert suggestion)
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault(); // Prevents new line on Enter
+            handleSendMessage();
+        }
+        if (event.key === "Tab") {
+            event.preventDefault();
+        }
+    };
 
     // Handle sending message
     const handleSendMessage = async () => {
@@ -17,7 +66,7 @@ const InputSection = () => {
         setSending(true);
         try {
             await sendMessage(message);
-            setMessage(""); // Clear input on successful send
+            setMessage("");
         } catch (error) {
             console.error("Failed to send message:", error);
             alert("Message sending failed. Please try again.");
@@ -30,27 +79,24 @@ const InputSection = () => {
         setMessage((prev) => prev + emojiObject.emoji);
     };
 
-    // Handle key press (Enter to send)
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault(); // Prevents new line on Enter
-            handleSendMessage();
-        }
-    };
-
-    // Close emoji picker when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-                setShowEmojiPicker(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
     return (
         <div className="relative p-4 bg-white shadow flex items-center gap-2 rounded-lg">
+            {/* Floating Formatting Menu */}
+            {selection && (
+                <div className="absolute bottom-12 left-2 bg-white shadow-lg rounded-lg p-2 flex gap-2 border">
+                    {formattingOptions.map((option, index) => (
+                        <button
+                            key={index}
+                            title={option.label}
+                            onClick={() => applyFormatting(option.symbol)}
+                            className="p-1 text-gray-600 hover:text-black"
+                        >
+                            {option.icon}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             {/* Emoji Picker Button */}
             <button title="Emoji" onClick={() => setShowEmojiPicker((prev) => !prev)} className="text-gray-500">
                 <Smile className="text-xl cursor-pointer" />
@@ -72,12 +118,14 @@ const InputSection = () => {
 
             {/* Message Input */}
             <input
+                ref={inputRef}
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyDown={handleKeyDown} // Listen for Enter key
+                onSelect={handleSelection}
+                onKeyDown={handleKeyDown} // Attach the keydown event listener here
                 placeholder="Write a message..."
-                className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 disabled={sending}
             />
 

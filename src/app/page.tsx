@@ -1,20 +1,20 @@
 "use client";
 
-import { useUserStore } from "@/stores/userStore";
+// import { useUserStore } from "@/stores/userStoretemp";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+// import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Logo from "@/assets/Logo";
 
 function Page() {
-  const { isAuthenticated } = useUserStore();
+  // const { isAuthenticated } = useUserStore();
   const router = useRouter();
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/chats");
-    }
-  }, [isAuthenticated, router]);
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     router.push("/chats");
+  //   }
+  // }, [isAuthenticated, router]);
 
   return (
     <div className="h-screen flex flex-col items-center bg-white text-navyLight p-6 sm:px-12 md:px-20 lg:px-32 justify-between overflow-y-hidden gap-3">

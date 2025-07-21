@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useChatStore } from "@/stores/chatStore";
-import { useUserStore } from "@/stores/userStore";
 import Image from "next/image";
 import { Inter } from "next/font/google";
 import SearchBar from "./SearchBar";
 import { EllipsisVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/stores/userStore";
+import { useChatStore } from "@/stores/chatStoretemp";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +17,6 @@ export default function ChatList() {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
   const toggleMenu = () => setMenuOpen(!menuOpen);
-  const handalGroup = () => {
-    console.log("Groupcreate");
-  };
   const handleChatClick = (chatId: string) => {
     changeChat(chatId);
     router.push(`/chats/${chatId}`);
@@ -31,7 +28,7 @@ export default function ChatList() {
   }, [user, fetchChats]);
   return (
     <div className="flex flex-col h-screen max-w-lg md:max-w-sm w-full overflow-y-hidden">
-      <div className="bg-navyLightest px-4 py-2 space-y-6 pb-14">
+      <div className="bg-navyLightest px-4 py-2 space-y-6 pb-14 w-full">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Image
@@ -78,29 +75,29 @@ export default function ChatList() {
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <p className={`text-4xl font-semibold text-white tracking-wider ${inter.className}`}>
+        <div className="flex justify-end items-end w-full">
+          {/* <p className={`text-4xl font-semibold text-white tracking-wider font-roboto`}>
             Chat
-          </p>
-          <SearchBar onCreateGroup={handalGroup} />
+          </p> */}
+          <SearchBar />
         </div>
       </div>
 
       <div className="flex justify-between px-6 py-4 bg-navy -mt-10 pb-14 text-white rounded-t-4xl text-xl font-semibold">
         <button
-          className={`px-5 py-1 rounded-full tracking-wide ${filter === "all" ? "bg-slateLight text-navy" : ""}`}
+          className={`px-5 py-1 rounded-full tracking-wide cursor-pointer ${filter === "all" ? "bg-slateLight text-navy" : ""}`}
           onClick={() => setFilter("all")}
         >
           All
         </button>
         <button
-          className={`px-5 py-1 rounded-full tracking-wide ${filter === "personal" ? "bg-slateLight text-navy" : ""}`}
+          className={`px-5 py-1 rounded-full tracking-wide cursor-pointer ${filter === "personal" ? "bg-slateLight text-navy" : ""}`}
           onClick={() => setFilter("personal")}
         >
           Personal
         </button>
         <button
-          className={`px-5 py-1 rounded-full tracking-wide ${filter === "group" ? "bg-slateLight text-navy" : ""}`}
+          className={`px-5 py-1 rounded-full tracking-wide cursor-pointer ${filter === "group" ? "bg-slateLight text-navy" : ""}`}
           onClick={() => setFilter("group")}
         >
           Group
@@ -119,7 +116,7 @@ export default function ChatList() {
               <div className="flex-1">
                 <div className="flex flex-col -space-y-2">
                   <p className="text-navy text-lg font-semibold">{users.chat_name}</p>
-                  <p className="text-navyLightest/70">{users.latest_message?.text || "No message yet"}</p>
+                  <p className="text-navyLightest/70 max-w-sm max-h-6 overflow-clip">{users.latest_message?.text || "No message yet"}</p>
                 </div>
               </div>
             </div>

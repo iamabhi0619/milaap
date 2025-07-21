@@ -10,7 +10,7 @@ const ChatPage = () => {
             <div className="hidden md:block">
                 <ChatList />
             </div>
-            <div className="hidden md:block w-full">
+            <div className="block w-full">
                 <MessageCanvas />
             </div>
         </div>

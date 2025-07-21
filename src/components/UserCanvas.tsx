@@ -1,4 +1,4 @@
-import { useChatStore } from '@/stores/chatStore';
+import { useChatStore } from '@/stores/chatStoretemp';
 import Image from 'next/image';
 import React from 'react';
 import { motion } from 'framer-motion';

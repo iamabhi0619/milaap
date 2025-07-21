@@ -1,5 +1,6 @@
-import { Menu, User, Users } from "lucide-react";
+import { Menu, MoveLeft, User, Users } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { motion } from "framer-motion";
 
@@ -25,6 +26,7 @@ const waveVariants = (delay: number) => ({
 });
 
 const TopBar = ({ chatName, avatar, isGroupChat, isTyping, setView }: Props) => {
+  const router = useRouter();
   const DP = avatar ? (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -48,6 +50,9 @@ const TopBar = ({ chatName, avatar, isGroupChat, isTyping, setView }: Props) => 
   return (
     <div className="flex items-center justify-between p-4 bg-white shadow rounded-b-3xl">
       <div className="flex items-center gap-2 cursor-pointer">
+        <div className="px-2 py-2 rounded-full shadow sm:hidden" onClick={() => { router.back() }}>
+          <MoveLeft />
+        </div>
         {DP}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

@@ -1,86 +1,144 @@
-import { create } from "zustand";
 import { supabase } from "@/lib/supabase";
-import { ChatStoreState } from "@/types/types";
+import { ChatWithUsers, DBMessage } from "@/lib/types/db";
+import { toast } from "sonner";
+import { create } from "zustand";
 
-export const useChatStore = create<ChatStoreState>((set) => ({
-  chatId: null,
-  isCurrentUserBlocked: false,
-  isReceiverBlocked: false,
+interface ChatStore {
+  chats: ChatWithUsers[];
+  selectedChat: ChatWithUsers | null;
+  messages: DBMessage[];
+  unreadChatIds: Set<string>;
+  loading: boolean;
+  error: string | null;
+
+  createChat: (userIds: string[], chatName?: string, isGroupChat?: boolean) => Promise<void>;
+  fetchChats: (userId: string) => Promise<void>;
+  selectChat: (chat: ChatWithUsers) => void;
+  clearSelectedChat: () => void;
+}
+
+export const useChatStore = create<ChatStore>((set) => ({
   chats: [],
+  selectedChat: null,
+  messages: [],
+  unreadChatIds: new Set(),
+  loading: false,
+  error: null,
+
+  selectChat: (chat) => set({ selectedChat: chat }),
+  clearSelectedChat: () => set({ selectedChat: null }),
+
+  createChat: async (userIds, chatName, isGroupChat = false) => {
+    try {
+      const creatorId = userIds[0];
+
+      // Check for existing 1-to-1 chat
+      if (!isGroupChat && userIds.length === 2) {
+        const { data: cuRows, error: cuErr } = await supabase
+          .from("chat_users")
+          .select("chat_id, user_id")
+          .in("user_id", userIds);
+
+        if (cuErr) throw cuErr;
+
+        const counts: Record<string, number> = {};
+        cuRows.forEach((r) => (counts[r.chat_id] = (counts[r.chat_id] ?? 0) + 1));
+        const existingChatId = Object.entries(counts).find(([, n]) => n === 2)?.[0];
+
+        if (existingChatId) {
+          const { data: existingChat } = await supabase
+            .from("chats")
+            .select("*, users!chat_users_user_id_fkey(id,name,avatar,status), latest_message(*)")
+            .eq("id", existingChatId)
+            .single();
+
+          if (existingChat) {
+            toast.info("Chat already exists");
+            set({ selectedChat: existingChat });
+            return;
+          }
+        }
+      }
+
+      const { data: chatRow, error: chatInsertError } = await supabase
+        .from("chats")
+        .insert({
+          chat_name: isGroupChat ? chatName ?? "New Group" : null,
+          is_group_chat: isGroupChat,
+          group_admin: isGroupChat ? creatorId : null,
+          avatar: null,
+        })
+        .select("*")
+        .single();
+
+      if (chatInsertError) throw chatInsertError;
+
+      const members = userIds.map((user_id) => ({
+        chat_id: chatRow.id,
+        user_id,
+      }));
+
+      const { error: usersInsertError } = await supabase.from("chat_users").insert(members);
+
+      if (usersInsertError) throw usersInsertError;
+
+      const { data: fullChat, error: fullChatError } = await supabase
+        .from("chats")
+        .select("*, users!chat_users_user_id_fkey(id,name,avatar,status), latest_message(*)")
+        .eq("id", chatRow.id)
+        .single();
+
+      if (fullChatError) throw fullChatError;
+
+      set((state) => ({
+        chats: [fullChat, ...state.chats],
+        selectedChat: fullChat,
+      }));
+    } catch (error: unknown) {
+      if (process.env.NODE_ENV === "development") console.error(error);
+      if (error instanceof Error) {
+        toast.error(error.message || "Failed to create chat");
+      } else {
+        toast.error("Failed to create chat");
+      }
+    }
+  },
 
   fetchChats: async (userId: string) => {
+    set({ loading: true, error: null });
     try {
+      if (!userId) throw new Error("User ID is required to fetch chats");
+
       const { data: chatUserData, error: chatUserError } = await supabase
         .from("chat_users")
         .select("chat_id")
         .eq("user_id", userId);
 
-      if (chatUserError || !chatUserData) {
-        console.error("Error fetching user chats:", chatUserError);
+      if (chatUserError) throw chatUserError;
+      if (!chatUserData || chatUserData.length === 0) {
+        set({ chats: [], loading: false });
+        toast.info("No chats found. Please start a new conversation.");
         return;
       }
 
       const chatIds = chatUserData.map((c) => c.chat_id);
 
-      const { data: chatData, error: chatError } = await supabase
+      const { data, error } = await supabase
         .from("chats")
-        .select("*, latest_message:messages!chats_latest_message_fkey(*)")
-        .in("id", chatIds);
+        .select("*, users!chat_users_user_id_fkey(id,name,avatar,status), latest_message(*)")
+        .in("id", chatIds)
+        .order("updated_at", { ascending: false });
 
-      if (chatError || !chatData) {
-        console.error("Error fetching chats:", chatError);
-        return;
-      }
+      if (error) throw error;
 
-      const processedChats = await Promise.all(
-        chatData.map(async (chat) => {
-          if (!chat.is_group_chat) {
-            const { data: chatUsers, error: chatUsersError } = await supabase
-              .from("chat_users")
-              .select("user_id")
-              .eq("chat_id", chat.id);
-            if (chatUsersError || !chatUsers) {
-              console.error("Error fetching chat users:", chatUsersError);
-              return chat;
-            }
-            const otherUserId = chatUsers.find((cu) => cu.user_id !== userId)?.user_id;
-            if (!otherUserId) {
-              console.warn("No other user found for chat:", chat.id);
-              return chat;
-            }
-            const { data: otherUser, error: userError } = await supabase
-              .from("users")
-              .select("name, avatar")
-              .eq("id", otherUserId)
-              .single();
-
-            if (userError || !otherUser) {
-              console.error("Error fetching other user details:", userError);
-              return chat;
-            }
-
-            return {
-              ...chat,
-              chat_name: otherUser.name,
-              avatar: otherUser.avatar,
-              name: otherUser.name, // Add name property
-            };
-          }
-          return chat;
-        })
-      );
-
-      set({ chats: processedChats });
-    } catch (error) {
-      console.error("Unexpected error in fetchChats:", error);
+      set({ chats: data || [], loading: false });
+    } catch (error: unknown) {
+      set({
+        loading: false,
+        error: error instanceof Error ? error.message : "Failed to fetch chats",
+      });
+      if (process.env.NODE_ENV === "development") console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to fetch chats");
     }
-  },
-
-  changeChat: (chatId: string) => {
-    set({ chatId });
-  },
-
-  resetChat: () => {
-    set({ chatId: null, isCurrentUserBlocked: false, isReceiverBlocked: false });
   },
 }));

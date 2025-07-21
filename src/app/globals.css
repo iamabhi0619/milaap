@@ -7,7 +7,10 @@
   --color-navyLightest: #233554;
   --color-slate: #8892b0;
   --color-slateLight: #a8b2d1;
-  --color-green: #64ffda;
+  --color-green: #0f766e;
+  --font-overpass: 'Overpass', sans-serif;
+  --font-overpass-mono: 'Overpass Mono', monospace;
+  --font-roboto: 'Roboto', sans-serif;
 }
 
 body {
@@ -22,6 +25,8 @@ body {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }

@@ -1,20 +1,19 @@
 "use client"
 import ChatNavigation from '@/components/ChatList'
 import MessageCanvas from '@/components/MessageCanvas'
-import React, { useEffect } from 'react'
-import { useRouter } from "next/navigation";
-import { useUserStore } from '@/stores/userStore';
+// import { useRouter } from "next/navigation";
+// import { useUserStore } from '@/stores/userStoretemp';
 
 
 const Chats = () => {
-    const router = useRouter();
-    const { isAuthenticated } = useUserStore();
+    // const router = useRouter();
+    // const { isAuthenticated } = useUserStore();
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push("/");
-        }
-    }, [isAuthenticated, router]);
+    // useEffect(() => {
+    //     if (!isAuthenticated) {
+    //         router.push("/");
+    //     }
+    // }, [isAuthenticated, router]);
 
 
     return (
