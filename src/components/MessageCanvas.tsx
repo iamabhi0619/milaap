@@ -1,128 +1,87 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useParams } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import { useUserStore } from "@/stores/userStoretemp";
-import { useChatStore } from "@/stores/chatStoretemp";
-import { useMessageStore } from "@/stores/messageStore";
-import TopBar from "./chat/TopBar";
-import InputSection from "./chat/InputSection";
-import UserCanvas from "./UserCanvas";
-import { Message, Chat } from "@/types/types";
-import formatMessageTime from "@/lib/dateformat";
-const MessageCanvas = () => {
-    const [loading, setLoading] = useState(false);
-    const [isView, setIsView] = useState(false);
-    const chatContainerRef = useRef<HTMLDivElement>(null);
-    const params = useParams();
-    const chatIdFromUrl = params.chatId as string;
-    const {
-        chatId,
-        chats,
-        changeChat
-    } = useChatStore();
-    const {
-        messages,
-        fetchMessages,
-        handleMessageUpdates,
-        markAsRead
-    } = useMessageStore();
+import React, { useEffect } from "react";
+import { useMessageStore } from "@/stores/message";
+import { useUserStore } from "@/stores/userStore";
+import { MessageList } from "./message-canvas";
+import { Card } from "@/components/ui/card";
+import { useChatStore } from "@/stores/chatStore";
+import InputBox from "./InputBox";
+
+interface MessageCanvasProps {
+    chatId?: string;
+    isGroupChat?: boolean;
+}
+
+function MessageCanvas({ chatId, isGroupChat = false }: MessageCanvasProps) {
+    const { messages, loading, hasMore, loadMessages, selectedChatId } = useMessageStore();
     const { user } = useUserStore();
-    const selectedChat = useMemo(
-        () => chats.find((chat: Chat) => chat.id === chatId),
-        [chats, chatId]
-    );
-    const isGroupChat = selectedChat?.is_group_chat || false;
-    const chatName = selectedChat?.chat_name || "Chat";
-    const toggleView = () => setIsView(!isView);
-    const id = chatId || chatIdFromUrl || "null";
-    // Set chatId in Zustand when URL changes
+    const { chats } = useChatStore();
+    // const [typingUsers, setTypingUsers] = useState<Array<{ name: string; avatar?: string }>>([]);
+
     useEffect(() => {
-        if (id === "null") return;
-        changeChat(id);
-        fetchMessages(id);
-    }, [chatId, changeChat, fetchMessages, id, markAsRead]);
-    // Subscribe to real-time updates
-    useEffect(() => {
-        if (!chatId) return;
-        const unsubscribe = handleMessageUpdates();
-        return () => unsubscribe?.();
-    }, [chatId, handleMessageUpdates]);
-    // Fetch more messages on scroll (Lazy Loading)
-    const fetchMoreMessages = useCallback(async () => {
-        if (!chatId || loading) return;
-        setLoading(true);
-        try {
-            const previousScrollHeight = chatContainerRef.current?.scrollHeight || 0;
-            await fetchMessages(chatId);
-            requestAnimationFrame(() => {
-                if (chatContainerRef.current) {
-                    chatContainerRef.current.scrollTop =
-                        chatContainerRef.current.scrollHeight - previousScrollHeight;
-                }
-            });
-        } catch (error) {
-            console.error("Error fetching more messages:", error);
+        // if (!chatId || !selectedChatId) return;
+
+        if (!selectedChatId) {
+            return;
         }
-        setLoading(false);
-    }, [chatId, loading, fetchMessages]);
-    // Auto-scroll when new messages arrive
-    useEffect(() => {
-        requestAnimationFrame(() => {
-            if (chatContainerRef.current) {
-                chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-            }
-        });
-    }, [messages]);
-    return (
-        <div className="w-full h-screen flex">
-            <div className="h-screen flex flex-col bg-gray-100 w-full">
-                {/* Chat Header */}
-                <TopBar
-                    setView={toggleView}
-                    chatName={chatName}
-                    avatar={selectedChat?.avatar || ""}
-                    isGroupChat={isGroupChat}
-                    isTyping={false}
-                />
-                {/* Messages Container */}
-                <div
-                    className="flex-1 p-4 overflow-y-auto space-y-3 pt-12"
-                    ref={chatContainerRef}
-                    onScroll={(e) => {
-                        if (e.currentTarget.scrollTop === 0) fetchMoreMessages();
-                    }}
-                >
-                    {messages.length === 0 && (
-                        <p className="text-center text-gray-500">No messages yet. Start the conversation!</p>
-                    )}
+        // Load initial messages
+        if (messages.length === 0) {
+            loadMessages(selectedChatId, undefined);
+        }
+    }, [chatId, selectedChatId]);
 
-                    {messages.map((msg: Message) => {
-                        const isUserMessage = user?.id && msg.sender_id === user.id;
+    const handleLoadMore = () => {
+        if (!chatId || loading || !hasMore) return;
+        const oldestMessage = messages[0];
+        if (oldestMessage) {
+            loadMessages(chatId, oldestMessage.created_at);
+        }
+    };
 
-                        return (
-                            <div key={msg.id} className={`flex ${isUserMessage ? "justify-end" : "justify-start"}`}>
-                                <div className={`max-w-xs p-3 rounded-lg ${isUserMessage ? "bg-navyLight text-white" : "bg-white text-gray-900"} shadow`}>
-                                    {msg.text && <ReactMarkdown>{msg.text}</ReactMarkdown>}
-                                    {msg.voice_url && <audio controls src={msg.voice_url} className="w-40 h-10"></audio>}
-                                    <span className={`text-xs font-semibold tracking-wide text-right flex items-center gap-1 ${isUserMessage ? "justify-end text-slateLight" : "justify-start text-navy/60"}`}>
-                                        {formatMessageTime(msg.created_at)}
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                    {loading && <p className="text-center text-gray-500">Loading more...</p>}
-                </div>
-
-                {/* Input Field */}
-                <InputSection />
+    if (!user) {
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Please log in to view messages</p>
             </div>
+        );
+    }
 
-            {isView && <UserCanvas setView={toggleView} />}
-        </div>
+    if (!selectedChatId) {
+        if (!chats || chats.length === 0) {
+            return (
+                <div className="flex-1 flex items-center justify-center">
+                    <p className="text-muted-foreground">No chats available. Start a new chat!</p>
+                </div>
+            );
+        }
+        return (
+            <div className="flex-1 flex items-center justify-center">
+                <p className="text-muted-foreground">Select a chat to view messages</p>
+            </div>
+        );
+    }
+
+    return (
+        <Card className="flex flex-col border-0 shadow-none h-full p-0 w-full">
+            {/* Message List */}
+            <MessageList
+                messages={messages}
+                currentUserId={user.id}
+                isGroupChat={isGroupChat}
+                loading={loading}
+                hasMore={hasMore}
+                onLoadMore={handleLoadMore}
+            />
+
+            <InputBox chatId={selectedChatId} />
+
+            {/* Typing Indicator */}
+            {/* <AnimatePresence>
+                {typingUsers.length > 0 && <TypingIndicator users={typingUsers} />}
+            </AnimatePresence> */}
+        </Card>
     );
-};
+}
 
 export default MessageCanvas;

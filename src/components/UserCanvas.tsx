@@ -1,4 +1,5 @@
-import { useChatStore } from '@/stores/chatStoretemp';
+import { useChatStore } from '@/stores/chatStore';
+import { useMessageStore } from '@/stores/message';
 import Image from 'next/image';
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -8,8 +9,9 @@ type Props = {
     setView: () => void;
 };
 const UserCanvas = ({ setView }: Props) => {
-    const { chats, chatId } = useChatStore();
-    const chat = chats.find((c) => c.id === chatId);
+    const { chats } = useChatStore();
+    const { selectedChatId } = useMessageStore();
+    const chat = chats?.find((c) => c.chat_id === selectedChatId);
 
     if (!chat) return null;
 
@@ -31,7 +33,7 @@ const UserCanvas = ({ setView }: Props) => {
                     className='h-32 w-32 rounded-full object-cover'
                 />
                 <div>
-                    <h2 className='font-bold text-navy text-lg'>{chat.chat_name}</h2>
+                    <h2 className='font-bold text-navy text-lg'>{chat.display_name}</h2>
                 </div>
             </div>
             <button className='bg-red-400 text-lg py-1 rounded-3xl hover:bg-red-500 cursor-pointer font-semibold text-navy'>

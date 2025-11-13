@@ -19,7 +19,7 @@ import { useChatStore } from "@/stores/chatStore";
  * - Production‑ready, accessible user search & DM creation component.
  * - Supabase for data, Zustand stores for auth + chat actions.
  * - Debounced, cancellable queries; keyboard & pointer interactions.
- * - Calls `createChat` with `{ [ currentUserId, selectedUserId ] }`.
+ * - Calls `addDM` to create or get direct message chat.
  * =============================================================================
  */
 
@@ -43,7 +43,7 @@ const SearchBar: React.FC = () => {
 
   // ------------------------------ Stores -------------------------------------
   const { user } = useUserStore();
-  const { createChat } = useChatStore();
+  const { addDM } = useChatStore();
 
   // ------------------------------ Refs ---------------------------------------
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,14 +154,14 @@ const SearchBar: React.FC = () => {
       if (selectedUserId === user.id) return; // no self‑chat
 
       try {
-        await createChat([user.id, selectedUserId]);
+        await addDM(selectedUserId);
       } catch (err) {
-        console.error("createChat failed", err);
+        console.error("addDM failed", err);
       }
 
       closeDropdown();
     },
-    [user?.id, createChat, closeDropdown]
+    [user?.id, addDM, closeDropdown]
   );
 
   // Keep highlighted item in view

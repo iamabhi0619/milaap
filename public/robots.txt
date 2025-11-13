@@ -1,0 +1,13 @@
+# Milaap - Robots.txt
+User-agent: *
+Allow: /
+Allow: /landing
+Allow: /auth
+
+# Disallow private pages
+Disallow: /chats
+Disallow: /user
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://milaap.app/sitemap.xml

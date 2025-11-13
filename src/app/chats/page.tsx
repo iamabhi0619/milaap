@@ -1,26 +1,52 @@
 "use client"
-import ChatNavigation from '@/components/ChatList'
-import MessageCanvas from '@/components/MessageCanvas'
-// import { useRouter } from "next/navigation";
-// import { useUserStore } from '@/stores/userStoretemp';
+
+import ChatList from "@/components/ChatList"
+import MessageCanvas from "@/components/MessageCanvas"
+import ChatTopBar from "@/components/Topbar/chat-top-bar"
+import Topbar from "@/components/Topbar/Topbar"
+import { useMessageStore } from "@/stores/message"
+import { useEffect } from "react"
+
 
 
 const Chats = () => {
-    // const router = useRouter();
-    // const { isAuthenticated } = useUserStore();
+    const { clearMessages, unselectChat, selectedChatId } = useMessageStore();
 
-    // useEffect(() => {
-    //     if (!isAuthenticated) {
-    //         router.push("/");
-    //     }
-    // }, [isAuthenticated, router]);
+    useEffect(() => {
+        return () => {
+            clearMessages();
+            unselectChat();
+        };
+    }, [])
+
 
 
     return (
-        <div className='flex w-full h-screen overflow-y-hidden'>
-            <ChatNavigation />
-            <div className='hidden md:block w-full'>
-                <MessageCanvas />
+        <div className="w-full overflow-hidden h-full flex flex-col">
+            {/* Mobile Layout */}
+            <div className="flex flex-col h-full md:hidden" id="for-mobile">
+                {selectedChatId ? (<ChatTopBar />) : (<Topbar />)}
+                <div className="flex-1 overflow-hidden">
+                    {selectedChatId ? (<MessageCanvas />) : (<ChatList />)}
+                </div>
+            </div>
+
+            {/* Desktop Layout */}
+            <div className="hidden md:flex h-full" id="for-desktop">
+                <div className="flex flex-col h-full w-full">
+                    <Topbar />
+                    <div className="flex flex-1 overflow-hidden">
+                        <div className="w-80 border-r h-full overflow-hidden">
+                            <ChatList />
+                        </div>
+                        <div className="flex-1 flex flex-col h-full overflow-hidden">
+                            <ChatTopBar />
+                            <div className="flex-1 overflow-hidden">
+                                <MessageCanvas />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )

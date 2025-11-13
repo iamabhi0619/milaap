@@ -19,7 +19,7 @@ const waveVariants = (delay: number) => ({
     transition: {
       duration: 0.6,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: "easeInOut" as const,
       delay: delay, // Different delay for each dot
     },
   },
