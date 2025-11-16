@@ -1,4 +1,4 @@
-import api from "@/lib/api";
+import api, { setAccessToken } from "@/lib/api";
 
 import { supabase } from "@/lib/supabase";
 import { APIUser } from "@/types/user";
@@ -53,15 +53,11 @@ export const useUserStore = create<UserStore>((set) => ({
   login: async (email: string, password: string, isRemember: boolean) => {
     try {
       set({ loading: true })
-      const response = await api.post("/auth/login", { email, password });
+      const response = await api.post("/auth/v1/login", { email, password, isRemember });
       const { token, user } = response.data;
       toast.success(response.data.message || "Login successful");
-      if (token) {
-        if (isRemember && typeof window !== "undefined") {
-          localStorage.setItem("token", token);
-        }
-      }
       set({ token: token });
+      setAccessToken(token);
       const userData = await initUser({ user });
       if (userData) {
         set({ user: userData, isAuthenticated: true });
@@ -71,7 +67,7 @@ export const useUserStore = create<UserStore>((set) => ({
         toast.error("Failed to initialize user data");
         return false;
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Login failed. Please check your credentials.");
       return false;
@@ -127,11 +123,11 @@ export const useUserStore = create<UserStore>((set) => ({
   fetchUser: async () => {
     try {
       set({ loading: true });
-      const tokenStr = localStorage.getItem("token");
-      if (!tokenStr) {
-        set({ user: null, isAuthenticated: false });
-        return;
-      }
+      // const tokenStr = localStorage.getItem("token");
+      // if (!tokenStr) {
+      //   set({ user: null, isAuthenticated: false });
+      //   return;
+      // }
       const { data: userData } = await api.get("/user/me");
       if (!userData) {
         set({ user: null, isAuthenticated: false });
