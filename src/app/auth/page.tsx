@@ -10,6 +10,7 @@ import AuthFooter from "@/app/auth/components/AuthFooter";
 import LeftSection from "./components/LeftSection";
 import { Card } from "@/components/ui/card";
 import { IconArrowLeft } from "@tabler/icons-react";
+import LoginWithGoogle from "./components/LoginWithGoogle";
 
 type AuthType = "login" | "signup";
 
@@ -39,8 +40,8 @@ export default function Page({ searchParams }: { searchParams: Promise<{ view?: 
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="flex flex-col md:flex-row w-full p-0 gap-0 max-w-5xl h-full sm:min-h-[70vh]">
+    <div className="h-dvh flex items-center justify-center p-4">
+      <Card className="flex flex-col md:flex-row w-full p-0 gap-0 max-w-5xl h-full sm:min-h-[70vh] sm:max-h-[85vh] shadow-lg">
         {/* Left graphic section */}
         <LeftSection />
 
@@ -56,6 +57,10 @@ export default function Page({ searchParams }: { searchParams: Promise<{ view?: 
             </span>
             Back to website
           </Link>
+
+          <div className="mb-6">
+            <LoginWithGoogle />
+          </div>
 
           <div className="flex-1">
             {type === "login" ? (

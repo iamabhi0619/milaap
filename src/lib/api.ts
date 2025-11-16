@@ -90,8 +90,8 @@ api.interceptors.response.use(
         onAccessTokenFetched(newAccessToken);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
-      } catch (refreshError: any) {
-        console.log(refreshError?.response)
+      } catch (refreshError: unknown) {
+        console.log((refreshError as { response?: unknown })?.response)
         isRefreshing = false;
         clearAccessToken();
         return Promise.reject(refreshError);

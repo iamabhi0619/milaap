@@ -31,12 +31,6 @@ export default function AuthFooter() {
           Contact Support
         </Link>
       </div>
-
-      <div className="text-center">
-        <span className="text-xs text-muted-foreground">
-          Social logins coming soon 🚀
-        </span>
-      </div>
     </div>
   );
 }
