@@ -97,9 +97,17 @@ export const useUserStore = create<UserStore>((set) => ({
   },
 
   logout: async () => {
-    set({ loading: true });
-    localStorage.clear();
-    set({ id: null, user: null, token: null, isAuthenticated: false, loading: false });
+    try {
+      set({ loading: true });
+      const response = await api.post("/auth/v1/logout");
+      toast.success(response.data.message || "Logout successful");
+      set({ id: null, user: null, token: null, isAuthenticated: false, loading: false });
+    } catch (error) {
+      console.log(error)
+      toast.error("Logout failed. Please try again.");
+    } finally {
+      set({ loading: false });
+    }
   },
 
   forgetPassword: async (email: string) => {
