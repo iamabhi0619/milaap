@@ -11,7 +11,7 @@ interface DateDividerProps {
 
 const DateDivider: React.FC<DateDividerProps> = ({ date }) => {
   const formatDate = (dateString: string) => {
-    const messageDate = moment.utc(dateString).local();
+    const messageDate = moment(dateString);
     return messageDate.calendar(null, {
       sameDay: '[Today]',
       lastDay: '[Yesterday]',

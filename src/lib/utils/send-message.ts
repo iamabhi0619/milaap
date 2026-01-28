@@ -2,7 +2,7 @@ import { Message } from "@/types/table";
 import { supabase } from "../supabase";
 
 
-interface SendMessageOptions {
+export interface SendMessageOptions {
     chat_id: string;
     sender_id: string;
     text?: string | null;
@@ -61,7 +61,7 @@ export async function sendMessage({
             }
         }
         return messageData as Message;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
         console.error("❌ Error sending message:", err.message);
         return null;

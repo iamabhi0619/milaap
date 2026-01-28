@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import moment from "moment";
 import { Message } from "@/types/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageBubble from "./MessageBubble";
@@ -36,13 +37,15 @@ const MessageList: React.FC<MessageListProps> = ({
 
   // Group messages by date
   const groupedMessages = messages.reduce((acc, message) => {
-    const date = new Date(message.created_at).toLocaleDateString();
+    const date = moment(message.created_at).format('YYYY-MM-DD');
     if (!acc[date]) {
       acc[date] = [];
     }
     acc[date].push(message);
     return acc;
   }, {} as Record<string, Message[]>);
+
+  const sortedDates = Object.keys(groupedMessages).sort();
 
   if (loading && messages.length === 0) {
     return (
@@ -70,27 +73,30 @@ const MessageList: React.FC<MessageListProps> = ({
         {hasMore && <LoadMoreTrigger onLoadMore={onLoadMore} loading={loading} />}
 
         {/* Messages grouped by date */}
-        {Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <div key={date}>
-            <DateDivider date={date} />
-            {dateMessages.map((message, index) => {
-              const prevMessage = dateMessages[index - 1];
-              const showAvatar =
-                !prevMessage || prevMessage.sender_id !== message.sender_id;
+        {sortedDates.map((date) => {
+          const dateMessages = groupedMessages[date];
+          return (
+            <div key={date}>
+              <DateDivider date={date} />
+              {dateMessages.map((message, index) => {
+                const prevMessage = dateMessages[index - 1];
+                const showAvatar =
+                  !prevMessage || prevMessage.sender_id !== message.sender_id;
 
-              return (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  isOwn={message.sender_id === currentUserId}
-                  isGroupChat={isGroupChat}
-                  showAvatar={showAvatar}
-                  currentUserId={currentUserId}
-                />
-              );
-            })}
-          </div>
-        ))}
+                return (
+                  <MessageBubble
+                    key={message.id}
+                    message={message}
+                    isOwn={message.sender_id === currentUserId}
+                    isGroupChat={isGroupChat}
+                    showAvatar={showAvatar}
+                    currentUserId={currentUserId}
+                  />
+                );
+              })}
+            </div>
+          );
+        })}
 
         {/* Auto-scroll anchor */}
         <div ref={bottomRef} className="h-1" />

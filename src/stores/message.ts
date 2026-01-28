@@ -88,7 +88,7 @@ export const useMessageStore = create<MessageStore>((set, get) => ({
                 loading: false,
                 hasMore: hasMoreMessages,
             });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             console.error("Error loading messages:", err.message);
             set({ error: err.message, loading: false });

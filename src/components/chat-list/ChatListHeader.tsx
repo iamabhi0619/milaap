@@ -5,7 +5,7 @@ import { Plus, Search, MessageCircle, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { ChatAddDialog } from './ChatAddDilog';
+import { ChatAddDialog } from './ChatAddDialog';
 
 interface ChatListHeaderProps {
     searchQuery: string;

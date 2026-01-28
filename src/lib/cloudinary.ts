@@ -1,75 +1,65 @@
-export interface CloudinaryUploadResult {
+import { supabase } from "./supabase";
+
+export interface SupabaseUploadResult {
   url: string;
-  publicId: string;
-  format: string;
-  resourceType: string;
+  path: string;
+  bucket: string;
+  type?: string;
+  id?: string;
 }
 
-export const uploadToCloudinary = (
+export interface FileUploadOptions {
+  bucket?: string;
+  folder?: string;
+  onProgress?: (progress: number) => void;
+}
+
+/**
+ * Upload a file to Supabase Storage.
+ * 
+ * @param file - The file to upload
+ * @param options - Upload options (bucket, folder, progress callback)
+ * @returns Promise resolving to the upload result
+ */
+export const fileUpload = async (
   file: File,
-  onProgress?: (progress: number) => void
-): Promise<CloudinaryUploadResult> => {
-  return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+  options: FileUploadOptions = {}
+): Promise<SupabaseUploadResult> => {
+  const {
+    bucket = 'attachment',
+    folder = '',
+    onProgress
+  } = options;
 
-    // Determine resource type based on file type
-    const fileType = file.type.split('/')[0];
-    let resourceType = 'image';
-    
-    if (fileType === 'video') {
-      resourceType = 'video';
-    } else if (fileType === 'audio') {
-      resourceType = 'video'; // Cloudinary uses 'video' endpoint for audio files
-    } else if (!fileType.startsWith('image')) {
-      resourceType = 'raw'; // For documents and other files
-    }
+  const ext = file.name.split('.').pop() || 'bin';
+  const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+  const filePath = folder ? `${folder}/${uniqueName}` : uniqueName;
 
-    // Create XMLHttpRequest for progress tracking
-    const xhr = new XMLHttpRequest();
-
-    // Track upload progress
-    xhr.upload.addEventListener('progress', (e) => {
-      if (e.lengthComputable && onProgress) {
-        const progress = Math.round((e.loaded / e.total) * 100);
-        onProgress(progress);
-      }
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false
     });
 
-    // Handle completion
-    xhr.addEventListener('load', () => {
-      if (xhr.status === 200) {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          resolve({
-            url: data.secure_url,
-            publicId: data.public_id,
-            format: data.format,
-            resourceType: data.resource_type,
-          });
-        } catch {
-          reject(new Error('Failed to parse response'));
-        }
-      } else {
-        reject(new Error(`Upload failed with status ${xhr.status}`));
-      }
-    });
+  if (error) {
+    console.error('Supabase upload error:', error);
+    throw new Error(`Upload failed: ${error.message}`);
+  }
 
-    // Handle errors
-    xhr.addEventListener('error', () => {
-      reject(new Error('Network error during upload'));
-    });
+  const { data: publicData } = supabase.storage
+    .from(bucket)
+    .getPublicUrl(filePath);
 
-    xhr.addEventListener('abort', () => {
-      reject(new Error('Upload cancelled'));
-    });
+  if (onProgress) {
+    onProgress(100);
+  }
 
-    // Send the request
-    xhr.open(
-      'POST',
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/${resourceType}/upload`
-    );
-    xhr.send(formData);
-  });
+  return {
+    url: publicData.publicUrl,
+    path: filePath,
+    bucket,
+    type: file.type,
+    id: data?.id
+  };
 };

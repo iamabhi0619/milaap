@@ -1,4 +1,4 @@
 'use client';
 
-export { default } from './input-box/InputBox';
-export * from './input-box/types';
+export { default } from './text-box/text-area';
+// export * from './input-box/types';

@@ -63,7 +63,7 @@ function MessageCanvas({ chatId, isGroupChat = false }: MessageCanvasProps) {
     }
 
     return (
-        <Card className="flex flex-col border-0 shadow-none h-full p-0 w-full">
+        <Card className="flex flex-col border-0 shadow-none h-full p-0 w-full pb-2">
             {/* Message List */}
             <MessageList
                 messages={messages}
