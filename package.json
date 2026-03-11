@@ -30,6 +30,7 @@
     "clsx": "^2.1.1",
     "emoji-picker-react": "^4.12.2",
     "framer-motion": "^12.5.0",
+    "frimousse": "^0.3.0",
     "lucide-react": "^0.483.0",
     "moment": "^2.30.1",
     "next": "^15.5.12",
