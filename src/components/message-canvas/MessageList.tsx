@@ -3,7 +3,6 @@
 import React, { useEffect, useRef } from "react";
 import moment from "moment";
 import { Message } from "@/types/table";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageBubble from "./MessageBubble";
 import { Skeleton } from "@/components/ui/skeleton";
 import EmptyMessages from "./EmptyMessages";
@@ -54,7 +53,7 @@ const MessageList: React.FC<MessageListProps> = ({
           <div key={i} className={`flex gap-2 ${i % 2 === 0 ? "flex-row-reverse" : ""}`}>
             <Skeleton className="h-10 w-10 rounded-full" />
             <div className="space-y-2">
-              <Skeleton className="h-16 w-[250px] rounded-2xl" />
+              <Skeleton className="h-16 w-62.5 rounded-2xl" />
             </div>
           </div>
         ))}
@@ -67,7 +66,7 @@ const MessageList: React.FC<MessageListProps> = ({
   }
 
   return (
-    <ScrollArea className="flex-1 pt-2 w-full" ref={scrollRef}>
+    <div className="flex-1 min-h-0 overflow-y-auto pt-2 w-full" ref={scrollRef}>
       <div className="px-2 md:px-4 w-full">
         {/* Load More Trigger */}
         {hasMore && <LoadMoreTrigger onLoadMore={onLoadMore} loading={loading} />}
@@ -101,7 +100,7 @@ const MessageList: React.FC<MessageListProps> = ({
         {/* Auto-scroll anchor */}
         <div ref={bottomRef} className="h-1" />
       </div>
-    </ScrollArea>
+    </div>
   );
 };
 

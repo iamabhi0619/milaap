@@ -15,7 +15,7 @@ const ChatTopBarMenu = () => {
                 <div className="grid gap-4">
                     <div className="space-y-2">
                         <p className="text-muted-foreground text-sm">
-                            Some of the option commin soon.
+                            Some of the option coming soon.
                         </p>
                     </div>
                     <div className="grid gap-2">

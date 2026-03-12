@@ -34,7 +34,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
     const [users, setUsers] = useState<UserType[]>([]);
     const [loading, setLoading] = useState(false);
     const [creating, setCreating] = useState(false);
-    
+
     const { user: currentUser } = useUserStore();
     const { addDM } = useChatStore();
 
@@ -47,7 +47,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
 
     const fetchUsers = async () => {
         if (!currentUser) return;
-        
+
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -74,7 +74,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
 
         try {
             setCreating(true);
-            
+
             if (chatType === 'dm' && selectedUsers.length === 1) {
                 // Create DM chat
                 await addDM(selectedUsers[0]);
@@ -85,7 +85,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
                 toast.info('Group chat creation coming soon!');
                 // TODO: Implement group chat creation
             }
-            
+
             handleClose();
         } catch (error) {
             console.error('Error creating chat:', error);
@@ -140,7 +140,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
 
     return (
         <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-125">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         {chatType === 'dm' ? (
@@ -215,7 +215,7 @@ export function ChatAddDialog({ open, onOpenChange, chatType }: ChatAddDialogPro
                         </>
                     )}
 
-                    <ScrollArea className="h-[280px] rounded-md border p-2">
+                    <ScrollArea className="h-70 rounded-md border p-2">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                                 <Loader2 className="h-8 w-8 animate-spin mb-2" />

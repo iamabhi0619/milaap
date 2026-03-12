@@ -3,13 +3,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Mic2, Loader2 } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+import { IconAlertCircle, IconLoader3, IconPlayerPause, IconPlayerPlay } from "@tabler/icons-react";
 
 interface VoiceMessageProps {
   voiceUrl: string;
   isOwn?: boolean;
 }
+
+// Static waveform bar heights — gives a natural look
+const WAVEFORM_BARS = [3, 5, 8, 6, 10, 7, 12, 9, 14, 10, 8, 13, 11, 15, 9, 7, 12, 10, 8, 6, 9, 11, 7, 5, 4];
 
 const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -19,8 +21,8 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
-  // Initialize audio element
   useEffect(() => {
     if (!voiceUrl) {
       setError(true);
@@ -31,31 +33,11 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
     const audio = new Audio();
     audio.preload = "metadata";
 
-    // Try without crossOrigin first for same-origin URLs
-    // audio.crossOrigin = "anonymous";
-
-    const handleCanPlay = () => {
-      setIsLoading(false);
-      setError(false);
-    };
-
-    const handleError = () => {
-      setError(true);
-      setIsLoading(false);
-    };
-
-    const handleLoadedMetadata = () => {
-      setAudioDuration(audio.duration || 0);
-    };
-
-    const handleTimeUpdate = () => {
-      setAudioProgress(audio.currentTime);
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-      setAudioProgress(0);
-    };
+    const handleCanPlay = () => { setIsLoading(false); setError(false); };
+    const handleError = () => { setError(true); setIsLoading(false); };
+    const handleLoadedMetadata = () => { setAudioDuration(audio.duration || 0); };
+    const handleTimeUpdate = () => { setAudioProgress(audio.currentTime); };
+    const handleEnded = () => { setIsPlaying(false); setAudioProgress(0); };
 
     audio.addEventListener("canplay", handleCanPlay);
     audio.addEventListener("error", handleError);
@@ -63,7 +45,6 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
     audio.addEventListener("timeupdate", handleTimeUpdate);
     audio.addEventListener("ended", handleEnded);
 
-    // Set source and load
     try {
       audio.src = voiceUrl;
       audio.load();
@@ -87,7 +68,6 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
   const togglePlayPause = async () => {
     const audio = audioRef.current;
     if (!audio || error) return;
-
     try {
       if (isPlaying) {
         audio.pause();
@@ -101,126 +81,130 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
     }
   };
 
-  const handleProgressChange = (value: number | readonly number[]) => {
-    const audio = audioRef.current;
-    if (!audio || !audioDuration) return;
-
-    const v = Array.isArray(value) ? (value as number[])[0] : (value as number);
-    const newTime = (v / 100) * audioDuration;
-    audio.currentTime = newTime;
-    setAudioProgress(newTime);
-  };
-
   const togglePlaybackSpeed = () => {
     const audio = audioRef.current;
     if (!audio) return;
-
     const speeds = [1, 1.5, 2];
-    const currentIndex = speeds.indexOf(playbackRate);
-    const nextSpeed = speeds[(currentIndex + 1) % speeds.length];
-
+    const nextSpeed = speeds[(speeds.indexOf(playbackRate) + 1) % speeds.length];
     audio.playbackRate = nextSpeed;
     setPlaybackRate(nextSpeed);
   };
 
+  const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio || !audioDuration || isLoading || error) return;
+    const rect = progressBarRef.current!.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = ratio * audioDuration;
+    setAudioProgress(ratio * audioDuration);
+  };
+
   const formatTime = (seconds: number) => {
-    if (!isFinite(seconds)) return "0:00";
+    if (!isFinite(seconds) || seconds < 0) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progressPercentage = audioDuration > 0 ? (audioProgress / audioDuration) * 100 : 0;
+  const progressRatio = audioDuration > 0 ? audioProgress / audioDuration : 0;
 
   return (
-    <div className={cn(
-      "relative rounded-2xl p-4 transition-all duration-300 shadow-sm",
-      "border backdrop-blur-sm",
-      isOwn
-        ? "bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-primary/20"
-        : "bg-linear-to-br from-muted/50 via-muted/30 to-transparent border-border/40",
-      "hover:shadow-md hover:scale-[1.01]"
-    )}>
-      <div className="flex items-center gap-3">
-        {/* Play/Pause Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          disabled={isLoading || error}
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-200",
+        "min-w-55 max-w-75",
+        isOwn
+          ? "bg-primary/15 border border-primary/25"
+          : "bg-muted/60 border border-border/40"
+      )}
+    >
+      {/* Play / Pause button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        disabled={isLoading || error}
+        onClick={togglePlayPause}
+        className={cn(
+          "h-9 w-9 rounded-full shrink-0 transition-all duration-200",
+          isOwn
+            ? "bg-primary text-primary-foreground hover:bg-primary/85 shadow-sm shadow-primary/30"
+            : "bg-foreground/10 text-foreground hover:bg-foreground/20",
+          (isLoading || error) && "opacity-50 cursor-not-allowed",
+          isPlaying && "scale-95"
+        )}
+      >
+        {isLoading ? (
+          <IconLoader3 className="h-4 w-4 animate-spin" />
+        ) : error ? (
+          <IconAlertCircle className="h-4 w-4 text-destructive" />
+        ) : isPlaying ? (
+          <IconPlayerPause className="h-4 w-4 fill-current" />
+        ) : (
+          <IconPlayerPlay className="h-4 w-4 fill-current ml-0.5" />
+        )}
+      </Button>
+
+      {/* Waveform + meta */}
+      <div className="flex-1 flex flex-col gap-1.5 min-w-0">
+        {/* Waveform bars */}
+        <div
+          ref={progressBarRef}
+          onClick={handleWaveformClick}
           className={cn(
-            "h-12 w-12 rounded-full shrink-0 transition-all duration-300",
-            "shadow-lg hover:shadow-xl",
-            isPlaying
-              ? "bg-primary text-primary-foreground hover:bg-primary/90 scale-105"
-              : error
-                ? "bg-destructive/20 text-destructive cursor-not-allowed"
-                : "bg-primary/90 text-primary-foreground hover:bg-primary",
+            "flex items-center gap-px h-8",
+            !error && !isLoading && audioDuration ? "cursor-pointer" : "cursor-default"
           )}
-          onClick={togglePlayPause}
         >
-          {isLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : error ? (
-            <Mic2 className="h-5 w-5" />
-          ) : isPlaying ? (
-            <Pause className="h-5 w-5" />
+          {error ? (
+            <span className="text-xs text-destructive/80">Unable to play audio</span>
           ) : (
-            <Play className="h-5 w-5 ml-0.5" />
+            WAVEFORM_BARS.map((height, i) => {
+              const barRatio = i / (WAVEFORM_BARS.length - 1);
+              const isActive = barRatio <= progressRatio;
+              return (
+                <div
+                  key={i}
+                  style={{ height: `${height * 2}px` }}
+                  className={cn(
+                    "w-1 rounded-full shrink-0 transition-all duration-100",
+                    isLoading
+                      ? "bg-muted-foreground/25 animate-pulse"
+                      : isActive
+                        ? isOwn
+                          ? "bg-primary"
+                          : "bg-foreground/70"
+                        : isOwn
+                          ? "bg-primary/25"
+                          : "bg-foreground/20",
+                    isPlaying && isActive && "scale-y-110"
+                  )}
+                />
+              );
+            })
           )}
-        </Button>
+        </div>
 
-        {/* Audio Info & Progress */}
-        <div className="flex-1 min-w-[250px] w-full space-y-2">
-          <div className="flex items-end w-full justify-end gap-2">
-            {/* <div className="flex items-center gap-2">
-              <Mic2 className={cn(
-                "h-4 w-4 transition-colors",
-                isPlaying ? "text-primary animate-pulse" : "text-muted-foreground"
-              )} />
-              <span className="text-xs font-semibold text-foreground/80">
-                {error ? "Unable to play audio" : "Voice Message"}
-              </span>
-            </div> */}
-
-            <div className="flex items-center gap-2">
-              {!error && !isLoading && (
-                <Button
-                  size="sm"
-                  className="h-6 px-2 text-xs font-mono"
-                  onClick={togglePlaybackSpeed}
-                >
-                  {playbackRate}x
-                </Button>
-              )}
-              <span className="text-xs font-mono text-muted-foreground tabular-nums">
-                {formatTime(audioProgress)} / {formatTime(audioDuration)}
-              </span>
-            </div>
+        {/* Time + speed */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 text-muted-foreground">
+            <span className="text-[11px] font-mono tabular-nums">
+              {formatTime(isPlaying ? audioProgress : audioDuration)}
+            </span>
           </div>
 
-          {/* Progress Slider */}
-          <div className="relative">
-            <Slider
-              value={[progressPercentage]}
-              onValueChange={handleProgressChange}
-              disabled={isLoading || error || !audioDuration}
-              max={100}
-              step={0.1}
+          {!error && !isLoading && (
+            <button
+              onClick={togglePlaybackSpeed}
               className={cn(
-                "cursor-pointer",
-                (isLoading || error) && "opacity-50 cursor-not-allowed"
+                "text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-md transition-all",
+                isOwn
+                  ? "bg-primary/20 text-primary hover:bg-primary/30"
+                  : "bg-foreground/10 text-foreground/70 hover:bg-foreground/20"
               )}
-            />
-            {isPlaying && (
-              <div
-                className="absolute top-1/2 -translate-y-1/2 h-2 bg-primary/20 rounded-full transition-all duration-100"
-                style={{
-                  width: `${progressPercentage}%`,
-                  left: 0
-                }}
-              />
-            )}
-          </div>
+            >
+              {playbackRate}×
+            </button>
+          )}
         </div>
       </div>
     </div>

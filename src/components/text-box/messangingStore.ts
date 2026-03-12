@@ -12,8 +12,8 @@ export interface AttachmentWithMetadata extends SupabaseUploadResult {
 }
 
 interface MessagingStore {
-    text?: string;
-    attachments?: Array<AttachmentWithMetadata>;
+    text: string;
+    attachments: Array<AttachmentWithMetadata>;
     isSending: boolean;
     error: string | null;
     voiceRecordingUrl?: string;
@@ -26,6 +26,8 @@ interface MessagingStore {
 }
 
 const useMessageBoxStore = create<MessagingStore>((set, get) => ({
+    text: '',
+    attachments: [],
     isSending: false,
     error: null,
     fileUploadProgress: {},
@@ -108,8 +110,15 @@ const useMessageBoxStore = create<MessagingStore>((set, get) => ({
 
     sendMessage: async () => {
         const { text, attachments, voiceRecordingUrl } = get();
+        const trimmedText = text.trim();
+        const stagedAttachments = attachments || [];
+        const imageAttachments = stagedAttachments.filter((attachment) => attachment.type?.startsWith('image/'));
+        const inlineImageAttachment = imageAttachments.length === 1 ? imageAttachments[0] : undefined;
+        const messageAttachments = inlineImageAttachment
+            ? stagedAttachments.filter((attachment) => attachment.id !== inlineImageAttachment.id)
+            : stagedAttachments;
 
-        if (!text && (!attachments || attachments.length === 0) && !voiceRecordingUrl) {
+        if (!trimmedText && stagedAttachments.length === 0 && !voiceRecordingUrl) {
             set({ error: 'Message cannot be empty' });
             return;
         }
@@ -130,10 +139,11 @@ const useMessageBoxStore = create<MessagingStore>((set, get) => ({
                 return;
             }
             const payload: SendMessageOptions = {
-                text: text || null,
+                text: trimmedText || null,
                 chat_id: selectedChatId,
                 sender_id: user.id,
-                attachments: (attachments || []).map(att => ({
+                image_url: inlineImageAttachment?.url || null,
+                attachments: messageAttachments.map(att => ({
                     url: att.url,
                     type: att.type ?? "file",
                     name: att.name,

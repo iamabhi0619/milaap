@@ -37,8 +37,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
       className={cn("flex gap-2 mb-4 group", isOwn ? "flex-row-reverse" : "flex-row")}
-      // onMouseEnter={() => setShowActions(true)}
-      // onMouseLeave={() => setShowActions(false)}
+    // onMouseEnter={() => setShowActions(true)}
+    // onMouseLeave={() => setShowActions(false)}
     >
       {/* Avatar - only show in group chats for others' messages */}
       {isGroupChat && !isOwn && showAvatar && (
@@ -58,7 +58,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}>
         {/* Sender Name (only in group chats for others' messages) */}
         {isGroupChat && !isOwn && (
-          <span className="text-xs text-muted-foreground mb-1 px-2">
+          <span className="mb-1 rounded-full border border-border/60 bg-background px-2.5 py-1 text-[11px] font-medium tracking-wide text-muted-foreground">
             {message.sender?.name || "Unknown"}
           </span>
         )}
@@ -74,23 +74,33 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {/* Message Bubble */}
         <div
           className={cn(
-            "relative rounded-2xl shadow-sm wrap-break-word",
-            message.text ? 'px-3 py-2 sm:px-4' : 'p-0',
+            "relative rounded-2xl border wrap-break-word shadow-sm",
+            message.text ? 'px-3 py-2.5 sm:px-4' : 'p-0',
             isOwn
-              ? "bg-primary text-primary-foreground rounded-br-none"
-              : "bg-secondary text-secondary-foreground rounded-bl-none",
+              ? "rounded-br-md border-primary/30 bg-primary"
+              : "rounded-bl-md border-border/60 bg-muted text-foreground",
             message.deleted && "opacity-50 italic"
           )}
         >
           {/* Message Content (text, formatted text) */}
-          <MessageContent message={message} isOwn={isOwn} />
+          <div>
+            <MessageContent message={message} isOwn={isOwn} />
 
-          {/* Edited Badge */}
-          {message.edited && !message.deleted && (
-            <Badge variant="outline" className="mt-1 text-xs">
-              Edited
-            </Badge>
-          )}
+            {/* Edited Badge */}
+            {message.edited && !message.deleted && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "mt-2 text-[10px] font-medium uppercase tracking-wide",
+                  isOwn
+                    ? "border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/10"
+                    : "border-border/60 bg-background/80 text-muted-foreground hover:bg-background/80"
+                )}
+              >
+                Edited
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Message Reactions */}
@@ -104,7 +114,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         )} */}
 
         {/* Timestamp & Status */}
-        <span className="text-xs text-muted-foreground mt-1 px-2">
+        <span className="mt-1 px-2 text-[11px] text-muted-foreground/90">
           {moment.utc(message.created_at).local().format('h:mm A')}
           {isOwn && message.seen_by && message.seen_by.length > 1 && " • Seen"}
         </span>

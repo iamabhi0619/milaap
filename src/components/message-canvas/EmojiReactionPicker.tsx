@@ -30,7 +30,6 @@ const EmojiReactionPicker: React.FC<EmojiReactionPickerProps> = ({ onReact, mess
       <PopoverTrigger render={(<Button variant="ghost" size="icon" className="h-7 w-7">
         <Smile className="h-4 w-4" />
       </Button>)}>
-
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" align="center">
         <div className="flex gap-1">

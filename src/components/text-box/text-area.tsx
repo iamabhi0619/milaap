@@ -18,7 +18,9 @@ import VoiceRecorder from './voice-recording';
 const TextBox = (_props: { chatId?: string; className?: string }) => {
     const { text, setText, sendMessage, attachments } = useMessageBoxStore();
     const { isRecording } = useVoiceRecordingStore();
-    const hasContent = text?.trim() || (attachments && attachments.length > 0);
+    const attachmentCount = attachments.length;
+    const hasImageAttachment = attachments.some((attachment) => attachment.type?.startsWith('image/'));
+    const hasContent = text.trim().length > 0 || attachmentCount > 0;
     const [isFocused, setIsFocused] = useState(false);
     const inputContainerRef = useRef<HTMLDivElement>(null);
 
@@ -36,12 +38,29 @@ const TextBox = (_props: { chatId?: string; className?: string }) => {
                     <VoiceRecorder />
                 ) : (
                     <>
-                        <div className='flex custom-scrollbar items-end flex-1 rounded-2xl border-2 border-border/60 px-4 pt-1 pb-1 h-full bg-linear-to-br from-secondary/60 via-secondary/40 to-secondary/20 dark:from-secondary-dark/60 dark:via-secondary-dark/40 dark:to-secondary-dark/20 backdrop-blur-sm shadow-sm hover:border-primary/40 focus-within:border-primary/60 transition-all duration-300'>
+                        <div className='flex flex-1 flex-col rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:border-primary/30 focus-within:border-primary/40 focus-within:shadow-md'>
+                            <div className='flex items-center justify-between gap-2 border-b border-border/60 px-4 py-2'>
+                                <div className='flex items-center gap-2 text-xs font-medium text-muted-foreground'>
+                                    <span className='inline-flex h-2 w-2 rounded-full bg-primary/70' />
+                                    {hasImageAttachment
+                                        ? 'Photo caption'
+                                        : attachmentCount > 0
+                                            ? 'Add a message with attachments'
+                                            : 'Compose message'}
+                                </div>
+                                {attachmentCount > 0 && (
+                                    <span className='rounded-full bg-muted px-2.5 py-1 text-[11px] font-semibold text-muted-foreground'>
+                                        {attachmentCount} attached
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className='flex custom-scrollbar items-end gap-2 px-3 py-2'>
                             <EmojiSelector onSelect={(emoji) => {
-                                setText(text + emoji);
+                                setText(`${text}${emoji}`);
                             }} />
                             <Textarea
-                                placeholder="Type your message..."
+                                placeholder={hasImageAttachment ? 'Add a caption...' : attachmentCount > 0 ? 'Add a message...' : 'Type your message...'}
                                 value={text}
                                 rows={1}
                                 onChange={(e) => setText(e.target.value)}
@@ -53,16 +72,17 @@ const TextBox = (_props: { chatId?: string; className?: string }) => {
                                         sendMessage();
                                     }
                                 }}
-                                className="field-sizing-content mb-0.5 hide-scrollbar flex-1 max-h-32 overflow-y-auto text-base w-full resize-none bg-none border-0 focus:ring-0 focus-visible:ring-0 bg-transparent py-1 dark:bg-transparent shadow-none min-h-0 placeholder:text-muted-foreground/60"
+                                className="field-sizing-content mb-0.5 hide-scrollbar min-h-0 max-h-32 w-full flex-1 resize-none border-0 bg-transparent py-1 text-sm shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/60"
                             />
                             <AttachmentSelector
                                 multiple={true}
                                 maxFiles={5}
                                 maxFileSize={50}
                             />
+                            </div>
                         </div>
                         {
-                            (text?.length ?? 0) > 0 ? (
+                            hasContent ? (
                                 <Button
                                     className={cn(
                                         "mx-0 h-12 w-12 rounded-full group cursor-pointer transition-all duration-300",

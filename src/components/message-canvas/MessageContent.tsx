@@ -21,7 +21,14 @@ const MessageContent: React.FC<MessageContentProps> = ({ message, isOwn }) => {
   const hasFormatting = /(\*\*|__|~~|`)/.test(message.text);
 
   return (
-    <div className={cn("text-sm", isOwn ? "text-primary-foreground" : "text-foreground")}>
+    <div
+      className={cn(
+        "text-base tracking-wide leading-6 [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2 [&_code]:rounded-sm [&_code]:bg-background/50 [&_code]:px-1 [&_code]:py-0.5 [&_p]:m-0 [&_strong]:font-semibold",
+        isOwn
+          ? "text-primary-foreground [&_a]:text-primary-foreground"
+          : "text-foreground [&_a]:text-foreground"
+      )}
+    >
       {hasFormatting ? (
         <ReactMarkdown>
           {message.text}

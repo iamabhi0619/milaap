@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React from 'react';
 import {
     IconX,
@@ -9,11 +10,14 @@ import {
     IconMusic,
     IconFileText,
     IconPdf,
+    IconSend,
+    IconSparkles,
 } from '@tabler/icons-react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import useMessageBoxStore from './messangingStore';
 import { Progress } from '../ui/progress';
+import { Badge } from '../ui/badge';
 
 interface AttachmentPreviewProps {
     className?: string;
@@ -48,7 +52,7 @@ const getFileTypeLabel = (fileType: string): string => {
 };
 
 const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
-    const { attachments, removeAttachment, fileUploadProgress } = useMessageBoxStore();
+    const { attachments, removeAttachment, fileUploadProgress, sendMessage, isSending, text } = useMessageBoxStore();
 
     if (!attachments || attachments.length === 0) {
         return null;
@@ -56,12 +60,72 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
 
     const uploadProgressEntries = Object.entries(fileUploadProgress);
     const isUploading = uploadProgressEntries.length > 0;
+    const hasCaption = text.trim().length > 0;
+    const imageCount = attachments.filter((attachment) => attachment.type?.startsWith('image/')).length;
+    const canSend = !isUploading && !isSending;
+
+    const handleSend = async () => {
+        if (!canSend) {
+            return;
+        }
+
+        await sendMessage();
+    };
 
     return (
-        <div className={cn('space-y-3 p-4 bg-linear-to-br from-muted/40 via-muted/20 to-transparent rounded-xl border border-border/50 backdrop-blur-sm shadow-sm', className)}>
+        <div className={cn('space-y-4 rounded-2xl border border-border bg-card/80 p-4 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-card/70', className)}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="h-6 rounded-full px-2.5 text-[11px] font-semibold">
+                            {attachments.length} {attachments.length === 1 ? 'attachment' : 'attachments'}
+                        </Badge>
+                        {imageCount > 0 && (
+                            <Badge variant="outline" className="h-6 rounded-full px-2.5 text-[11px] font-semibold">
+                                {imageCount === 1 ? 'Photo message ready' : `${imageCount} photos staged`}
+                            </Badge>
+                        )}
+                    </div>
+                    <p className="text-sm font-medium text-foreground">
+                        Review attachments before sending
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        {imageCount > 0
+                            ? hasCaption
+                                ? 'Your current text will be sent as the image caption.'
+                                : 'Add text below if you want to send this image with a caption.'
+                            : 'You can send these files now or add a message first.'}
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {!isUploading && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 rounded-full px-3 text-xs font-semibold"
+                            onClick={() => {
+                                attachments.forEach((att) => att.id && removeAttachment(att.id));
+                            }}
+                        >
+                            Clear all
+                        </Button>
+                    )}
+                    <Button
+                        size="sm"
+                        className="h-9 rounded-full px-4 text-xs font-semibold"
+                        onClick={handleSend}
+                        disabled={!canSend}
+                    >
+                        <IconSend className="size-3.5" />
+                        {imageCount > 0 ? (hasCaption ? 'Send with caption' : 'Send photo') : 'Send files'}
+                    </Button>
+                </div>
+            </div>
+
             {/* Upload Progress Banner */}
             {isUploading && (
-                <div className="space-y-2.5 p-3.5 bg-linear-to-r from-primary/10 via-primary/5 to-transparent rounded-xl border border-primary/30 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="space-y-2.5 rounded-xl border border-primary/20 bg-primary/5 p-3.5 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className="size-2 rounded-full bg-primary animate-pulse" />
@@ -91,7 +155,7 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
             )}
 
             {/* Attachment Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[430px] overflow-y-auto scrollbar-thin scrollbar-thumb-primary/20 scrollbar-track-transparent hover:scrollbar-thumb-primary/40 pr-1">
+            <div className="grid max-h-[430px] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 xl:grid-cols-4">
                 {attachments.map((attachment) => {
                     const fileType = attachment.type || '';
                     const Icon = getFileIcon(fileType);
@@ -102,20 +166,23 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
                         <div
                             key={attachment.id}
                             className={cn(
-                                'group relative rounded-xl border border-border/60 bg-linear-to-br from-card to-card/50 overflow-hidden',
+                                'group relative overflow-hidden rounded-xl border border-border bg-background/70',
                                 'transition-all duration-300 ease-out',
-                                'hover:border-primary/60 ',
+                                'hover:border-primary/50 hover:shadow-md',
                                 'animate-in fade-in zoom-in-95 duration-300'
                             )}
                         >
                             {/* Preview Area */}
-                            <div className="aspect-square relative bg-linear-to-br from-muted/60 to-muted/30">
+                            <div className="relative aspect-square bg-muted/50">
                                 {isImage ? (
                                     <>
-                                        <img
+                                        <Image
                                             src={attachment.url}
                                             alt={attachment.name}
-                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            fill
+                                            unoptimized
+                                            sizes="(max-width: 640px) 50vw, 25vw"
+                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
                                         />
                                         <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </>
@@ -140,7 +207,7 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
                                     size="icon"
                                     className={cn(
                                         'absolute top-2 right-2 size-7 rounded-full',
-                                        'opacity-0 group-hover:opacity-100 transition-all duration-300',
+                                        'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300',
                                         'shadow-lg hover:shadow-xl backdrop-blur-sm',
                                         'hover:scale-110 active:scale-95'
                                     )}
@@ -158,7 +225,7 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
                             </div>
 
                             {/* File Info */}
-                            <div className="p-3 space-y-1 bg-linear-to-b from-transparent to-muted/20">
+                            <div className="space-y-1 border-t border-border/60 p-3">
                                 <p className="text-xs font-semibold truncate leading-tight" title={attachment.name}>
                                     {attachment.name}
                                 </p>
@@ -172,8 +239,8 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
             </div>
 
             {/* Summary */}
-            <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                     <span className="inline-flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
                         {attachments.length}
                     </span>
@@ -182,18 +249,10 @@ const AttachmentPreview: React.FC<AttachmentPreviewProps> = ({ className }) => {
                         <span className="font-bold text-foreground/80"> {formatFileSize(attachments.reduce((acc, att) => acc + att.size, 0))}</span>
                     </span>
                 </span>
-                {!isUploading && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs font-semibold hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
-                        onClick={() => {
-                            attachments.forEach((att) => att.id && removeAttachment(att.id));
-                        }}
-                    >
-                        Clear all
-                    </Button>
-                )}
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                    <IconSparkles className="size-3.5 text-primary" />
+                    {imageCount > 0 ? 'Caption supported for photo messages' : 'Ready to send'}
+                </div>
             </div>
         </div>
     );

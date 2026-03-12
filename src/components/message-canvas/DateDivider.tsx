@@ -3,7 +3,6 @@
 import React from "react";
 import moment from "moment";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 
 interface DateDividerProps {
   date: string;
@@ -22,11 +21,11 @@ const DateDivider: React.FC<DateDividerProps> = ({ date }) => {
 
   return (
     <div className="flex items-center justify-center my-4">
-      <Separator className="flex-1" />
-      <Badge variant="secondary" className="mx-4 text-xs font-normal">
+      <Separator className="flex-1 bg-border/50" />
+      <div className="mx-4 text-xs font-normal text-foreground/30">
         {formatDate(date)}
-      </Badge>
-      <Separator className="flex-1" />
+      </div>
+      <Separator className="flex-1 bg-border/50" />
     </div>
   );
 };

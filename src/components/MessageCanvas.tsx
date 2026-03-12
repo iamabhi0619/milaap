@@ -4,7 +4,6 @@ import React, { useEffect } from "react";
 import { useMessageStore } from "@/stores/message";
 import { useUserStore } from "@/stores/userStore";
 import { MessageList } from "./message-canvas";
-import { Card } from "@/components/ui/card";
 import { useChatStore } from "@/stores/chatStore";
 import InputBox from "./InputBox";
 
@@ -17,15 +16,11 @@ function MessageCanvas({ chatId, isGroupChat = false }: MessageCanvasProps) {
     const { messages, loading, hasMore, loadMessages, selectedChatId } = useMessageStore();
     const { user } = useUserStore();
     const { chats } = useChatStore();
-    // const [typingUsers, setTypingUsers] = useState<Array<{ name: string; avatar?: string }>>([]);
 
     useEffect(() => {
-        // if (!chatId || !selectedChatId) return;
-
         if (!selectedChatId) {
             return;
         }
-        // Load initial messages
         if (messages.length === 0) {
             loadMessages(selectedChatId, undefined);
         }
@@ -63,7 +58,7 @@ function MessageCanvas({ chatId, isGroupChat = false }: MessageCanvasProps) {
     }
 
     return (
-        <Card className="flex flex-col border-0 shadow-none h-full p-0 w-full pb-2">
+        <div className="flex flex-col h-full flex-1">
             {/* Message List */}
             <MessageList
                 messages={messages}
@@ -80,7 +75,7 @@ function MessageCanvas({ chatId, isGroupChat = false }: MessageCanvasProps) {
             {/* <AnimatePresence>
                 {typingUsers.length > 0 && <TypingIndicator users={typingUsers} />}
             </AnimatePresence> */}
-        </Card>
+        </div>
     );
 }
 

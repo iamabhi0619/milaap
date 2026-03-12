@@ -91,7 +91,7 @@ function ChatList() {
         </div>
       ) : (
         <ScrollArea className="flex-1">
-          <div className='space-y-1 px-2 pt-2 pb-4'>
+          <div className='space-y-3 px-2 pt-2 pb-4'>
             {filteredChats.map((chat) => (
               <ChatItem
                 key={chat.chat_id}

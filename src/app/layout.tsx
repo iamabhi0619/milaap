@@ -6,7 +6,7 @@ import ClientLayout from "./ClientLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({subsets:['latin'],variable:'--font-sans'});
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 const overpass = Overpass({
   subsets: ["latin"],
@@ -136,72 +136,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning className={cn("font-sans", inter.variable)}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                function getCookie(name) {
-                  const nameEQ = name + "=";
-                  const ca = document.cookie.split(";");
-                  for (let i = 0; i < ca.length; i++) {
-                    let c = ca[i];
-                    while (c.charAt(0) === " ") c = c.substring(1, c.length);
-                    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-                  }
-                  return null;
-                }
-                
-                const presets = {
-                  "native-blues": {
-                    primary: "oklch(0.45 0.12 240)",
-                    accent: "oklch(0.55 0.10 220)",
-                    secondary: "oklch(0.90 0.02 240)",
-                  },
-                  "ocean-breeze": {
-                    primary: "oklch(0.45 0.15 200)",
-                    accent: "oklch(0.55 0.12 180)",
-                    secondary: "oklch(0.88 0.02 190)",
-                  },
-                  "sunset-glow": {
-                    primary: "oklch(0.50 0.18 30)",
-                    accent: "oklch(0.60 0.15 40)",
-                    secondary: "oklch(0.88 0.02 35)",
-                  },
-                  "midnight-sky": {
-                    primary: "oklch(0.35 0.12 270)",
-                    accent: "oklch(0.50 0.15 280)",
-                    secondary: "oklch(0.88 0.02 275)",
-                  },
-                };
-                
-                const savedPreset = getCookie("themePreset") || "native-blues";
-                const savedScale = getCookie("scale") || "";
-                const savedRadius = getCookie("radius") || "";
-                
-                const root = document.documentElement;
-                
-                // Apply theme colors
-                const colors = presets[savedPreset];
-                if (colors) {
-                  root.style.setProperty("--primary", colors.primary);
-                  root.style.setProperty("--accent", colors.accent);
-                  root.style.setProperty("--secondary", colors.secondary);
-                }
-                
-                // Apply scale
-                const scaleValues = { "": "1", "xs": "0.875", "lg": "1.125" };
-                root.style.fontSize = (parseFloat(scaleValues[savedScale] || "1") * 100) + "%";
-                root.style.setProperty("--spacing", savedScale === "" ? "0.25rem" : "calc(0.25rem * " + scaleValues[savedScale] + ")");
-                
-                // Apply radius
-                const radiusValues = { "": "0.5rem", "sm": "0.25rem", "xl": "0.75rem" };
-                root.style.setProperty("--radius", radiusValues[savedRadius] || "0.5rem");
-              })();
-            `,
-          }}
-        />
-      </head>
       <body className={`${roboto.className} ${overpass.className} ${overpassMono.className} antialiased`}>
         <ThemeProvider
           attribute="class"

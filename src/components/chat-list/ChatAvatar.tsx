@@ -1,6 +1,7 @@
+"use client";
+import NextImage from 'next/image';
 import React from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users } from 'lucide-react';
+import { IconUsers } from '@tabler/icons-react';
 import { cn } from '@/lib/utils';
 
 interface ChatAvatarProps {
@@ -11,8 +12,12 @@ interface ChatAvatarProps {
 }
 
 const getInitials = (name: string) => {
-  return name
+  const safeName = name.trim();
+  if (!safeName) return 'U';
+
+  return safeName
     .split(' ')
+    .filter(Boolean)
     .map((n) => n[0])
     .join('')
     .toUpperCase()
@@ -20,30 +25,59 @@ const getInitials = (name: string) => {
 };
 
 export function ChatAvatar({ avatar, displayName, isGroup, isActive }: ChatAvatarProps) {
+  const [loadedAvatar, setLoadedAvatar] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    setLoadedAvatar(null);
+
+    if (!avatar) {
+      return;
+    }
+
+    const preloadImage = new window.Image();
+
+    preloadImage.onload = () => {
+      setLoadedAvatar(avatar);
+    };
+
+    preloadImage.onerror = () => {
+      setLoadedAvatar(null);
+    };
+
+    preloadImage.src = avatar;
+
+    return () => {
+      preloadImage.onload = null;
+      preloadImage.onerror = null;
+    };
+  }, [avatar]);
+
   return (
-    <div className="relative">
-      <Avatar
-        className={cn(
-          'h-12 w-12 border-2 transition-all duration-200',
-          isActive ? 'border-primary' : 'border-transparent group-hover:border-primary/30'
-        )}
-      >
-        <AvatarImage src={avatar || undefined} alt={displayName} />
-        <AvatarFallback
-          className={cn(
-            'text-sm font-semibold text-white',
-            isGroup
-              ? 'bg-linear-to-br from-purple-500 to-pink-500'
-              : 'bg-linear-to-br from-blue-500 to-cyan-500'
-          )}
-        >
-          {getInitials(displayName)}
-        </AvatarFallback>
-      </Avatar>
+    <div
+      className={cn(
+        'relative h-11 w-11 shrink-0 overflow-hidden rounded-full border bg-muted',
+        isActive ? 'border-primary ring-2 ring-primary/20' : 'border-border group-hover:border-primary/40'
+      )}
+    >
+      <div className="flex h-full w-full items-center justify-center rounded-full text-sm font-semibold leading-none text-muted-foreground">
+        {getInitials(displayName)}
+      </div>
+
+      {loadedAvatar ? (
+        <NextImage
+          src={loadedAvatar}
+          alt={displayName}
+          fill
+          unoptimized
+          sizes="48px"
+          className="absolute inset-0 rounded-full object-cover"
+        />
+      ) : null}
+
       {isGroup && (
-        <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-1 border border-border shadow-sm">
-          <Users className="h-3 w-3 text-muted-foreground" />
-        </div>
+        <span className="absolute right-0 bottom-0 z-10 inline-flex size-3 items-center justify-center rounded-full bg-muted text-muted-foreground ring-1 ring-border">
+          <IconUsers className="size-2" />
+        </span>
       )}
     </div>
   );
