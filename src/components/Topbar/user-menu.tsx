@@ -24,39 +24,41 @@ export default function UserMenu() {
 
   if (!isAuthenticated) {
     return (
-      <Button variant="outline" asChild>
-        <Link href={'/auth'}>
-          Login
-        </Link>
+      <Button variant="outline" render={(<Link href={'/auth'}>
+        Login
+      </Link>)}>
+
       </Button>
     );
   }
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
-          <Avatar>
-            <AvatarImage src={user?.avatar || "/origin/avatar.jpg"} alt="Profile image" />
-            <AvatarFallback>{user?.name ? user.name[0] : "U"}</AvatarFallback>
-          </Avatar>
-        </Button>
+      <DropdownMenuTrigger render={(<Button variant="ghost" className="h-auto p-0 hover:bg-transparent">
+        <Avatar>
+          <AvatarImage src={user?.avatar || "/origin/avatar.jpg"} alt="Profile image" />
+          <AvatarFallback>{user?.name ? user.name[0] : "U"}</AvatarFallback>
+        </Avatar>
+      </Button>)}>
+
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-64" align="end">
-        <DropdownMenuLabel className="flex min-w-0 flex-col">
-          <span className="truncate text-sm font-medium text-foreground">
-            {user?.name || "User"}
-          </span>
-          <span className="truncate text-xs font-normal text-muted-foreground">
-            {user?.username || "user@email.com"}
-          </span>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-medium text-foreground">
+              {user?.name || "User"}
+            </span>
+            <span className="truncate text-xs font-normal text-muted-foreground">
+              {user?.username || "user@email.com"}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem asChild>
-            <Link href={'/profile'}>
-              <IconUser size={16} className="opacity-60" aria-hidden="true" />
-              <span>Profile</span>
-            </Link>
+          <DropdownMenuItem render={(<Link href={'/profile'}>
+            <IconUser size={16} className="opacity-60" aria-hidden="true" />
+            <span>Profile</span>
+          </Link>)}>
+
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -81,10 +83,10 @@ export function SheetDownMenu({ onClose }: { onClose?: () => void }) {
   if (!isAuthenticated) {
     return (
       <div className="px-3 py-2">
-        <Button variant="outline" className="w-full" asChild>
-          <Link href={'/auth'} onClick={onClose}>
-            Login
-          </Link>
+        <Button variant="outline" className="w-full" render={(<Link href={'/auth'} onClick={onClose}>
+          Login
+        </Link>)}>
+
         </Button>
       </div>
     );

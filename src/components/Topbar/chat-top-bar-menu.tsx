@@ -6,10 +6,10 @@ import { IconDotsVertical } from '@tabler/icons-react'
 const ChatTopBarMenu = () => {
     return (
         <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="ghost" size={'icon'} className='cursor-pointer'>
-                    <IconDotsVertical />
-                </Button>
+            <PopoverTrigger render={(<Button variant="ghost" size={'icon'} className='cursor-pointer'>
+                <IconDotsVertical />
+            </Button>)}>
+
             </PopoverTrigger>
             <PopoverContent className="w-80">
                 <div className="grid gap-4">

@@ -40,22 +40,22 @@ const MessageReactions: React.FC<MessageReactionsProps> = ({
 
         return (
           <Popover key={emoji}>
-            <PopoverTrigger asChild>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
+            <PopoverTrigger render={(<motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Badge
+                variant={userReacted ? "default" : "secondary"}
+                className={cn(
+                  "cursor-pointer px-2 py-0.5 text-xs flex items-center gap-1",
+                  userReacted && "ring-2 ring-primary"
+                )}
               >
-                <Badge
-                  variant={userReacted ? "default" : "secondary"}
-                  className={cn(
-                    "cursor-pointer px-2 py-0.5 text-xs flex items-center gap-1",
-                    userReacted && "ring-2 ring-primary"
-                  )}
-                >
-                  <span>{emoji}</span>
-                  <span>{count}</span>
-                </Badge>
-              </motion.div>
+                <span>{emoji}</span>
+                <span>{count}</span>
+              </Badge>
+            </motion.div>)}>
+
             </PopoverTrigger>
             <PopoverContent className="w-auto p-2" align="start">
               <div className="text-sm">

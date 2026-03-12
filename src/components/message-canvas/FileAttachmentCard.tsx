@@ -88,16 +88,16 @@ const FileAttachmentCard: React.FC<FileAttachmentCardProps> = ({ attachment, isO
 
                     <div className="flex items-center gap-1">
                         <Tooltip>
-                            <TooltipTrigger asChild>
-                                <a href={attachment.file_url} download={fileName}>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9 rounded-full opacity-60 group-hover:opacity-100 hover:bg-primary/10 transition-all"
-                                    >
-                                        <IconDownload className="h-4 w-4" />
-                                    </Button>
-                                </a>
+                            <TooltipTrigger render={(<a href={attachment.file_url} download={fileName}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9 rounded-full opacity-60 group-hover:opacity-100 hover:bg-primary/10 transition-all"
+                                >
+                                    <IconDownload className="h-4 w-4" />
+                                </Button>
+                            </a>)}>
+
                             </TooltipTrigger>
                             <TooltipContent>Download</TooltipContent>
                         </Tooltip>

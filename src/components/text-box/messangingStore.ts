@@ -76,7 +76,7 @@ const useMessageBoxStore = create<MessagingStore>((set, get) => ({
         const fileName = `recording-${Date.now()}.webm`;
         const path = `${fileName}`;
         
-        const { data: uploadData, error } = await supabase.storage
+        const { error } = await supabase.storage
             .from('attachment')
             .upload(path, blob, {
                 contentType: 'audio/webm',

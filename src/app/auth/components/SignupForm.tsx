@@ -210,7 +210,7 @@ export default function SignupForm({ onToggleForm }: { onToggleForm: () => void 
           <Label htmlFor="gender" className="text-sm font-semibold">
             Gender
           </Label>
-          <Select value={formData.gender} onValueChange={(value) => handleChange("gender", value)}>
+          <Select value={formData.gender ?? undefined} onValueChange={(value) => handleChange("gender", value ?? "")}>
             <SelectTrigger className={`h-12 ${validationErrors.gender ? "border-destructive" : ""}`}>
               <SelectValue placeholder="Select your gender" />
             </SelectTrigger>

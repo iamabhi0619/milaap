@@ -3,8 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Download, Play, Pause, Mic2, Loader2 } from "lucide-react";
+import { Play, Pause, Mic2, Loader2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface VoiceMessageProps {
@@ -69,7 +68,7 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
       audio.src = voiceUrl;
       audio.load();
       audioRef.current = audio;
-    } catch (err) {
+    } catch {
       setError(true);
       setIsLoading(false);
     }
@@ -97,16 +96,17 @@ const VoiceMessage: React.FC<VoiceMessageProps> = ({ voiceUrl, isOwn = false }) 
         await audio.play();
         setIsPlaying(true);
       }
-    } catch (err) {
+    } catch {
       setError(true);
     }
   };
 
-  const handleProgressChange = (value: number[]) => {
+  const handleProgressChange = (value: number | readonly number[]) => {
     const audio = audioRef.current;
     if (!audio || !audioDuration) return;
 
-    const newTime = (value[0] / 100) * audioDuration;
+    const v = Array.isArray(value) ? (value as number[])[0] : (value as number);
+    const newTime = (v / 100) * audioDuration;
     audio.currentTime = newTime;
     setAudioProgress(newTime);
   };

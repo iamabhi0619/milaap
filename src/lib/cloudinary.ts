@@ -63,3 +63,11 @@ export const fileUpload = async (
     id: data?.id
   };
 };
+
+/**
+ * Upload a file and return its public URL.
+ */
+export const uploadToCloudinary = async (file: File): Promise<string> => {
+  const result = await fileUpload(file, { bucket: 'avatars' });
+  return result.url;
+};

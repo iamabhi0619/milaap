@@ -100,19 +100,19 @@ export default function NotificationMenu() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="relative size-8 rounded-full text-muted-foreground shadow-none hidden"
-          aria-label="Open notifications">
-          <BellIcon size={16} aria-hidden="true" />
-          {unreadCount > 0 && (
-            <div
-              aria-hidden="true"
-              className="absolute top-0.5 right-0.5 size-1 rounded-full bg-primary" />
-          )}
-        </Button>
+      <PopoverTrigger render={(<Button
+        size="icon"
+        variant="ghost"
+        className="relative size-8 rounded-full text-muted-foreground shadow-none hidden"
+        aria-label="Open notifications">
+        <BellIcon size={16} aria-hidden="true" />
+        {unreadCount > 0 && (
+          <div
+            aria-hidden="true"
+            className="absolute top-0.5 right-0.5 size-1 rounded-full bg-primary" />
+        )}
+      </Button>)}>
+
       </PopoverTrigger>
       <PopoverContent className="w-80 p-1">
         <div className="flex items-baseline justify-between gap-4 px-3 py-2">

@@ -60,10 +60,10 @@ const MessageActions: React.FC<MessageActionsProps> = ({
 
       {/* More Actions Dropdown */}
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-7 w-7">
-            <MoreVertical className="h-4 w-4" />
-          </Button>
+        <DropdownMenuTrigger render={(<Button variant="ghost" size="icon" className="h-7 w-7">
+          <MoreVertical className="h-4 w-4" />
+        </Button>)}>
+
         </DropdownMenuTrigger>
         <DropdownMenuContent align={isOwn ? "end" : "start"}>
           {isOwn && !message.deleted && (

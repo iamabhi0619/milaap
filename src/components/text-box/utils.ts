@@ -2,7 +2,7 @@
  * Utility functions for file handling in text-box components
  */
 
-import { FileType, FILE_TYPE_CATEGORIES, FILE_EXTENSIONS, FileValidationResult } from './types';
+import { FileType, FILE_TYPE_CATEGORIES, FileValidationResult } from './types';
 
 /**
  * Detect file type from File object

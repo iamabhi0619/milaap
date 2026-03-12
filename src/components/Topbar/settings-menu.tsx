@@ -74,7 +74,7 @@ const applyThemePreset = (preset: ThemePreset) => {
 
 export default function SettingsMenu() {
   const { theme, setTheme } = useTheme()
-  
+
   // Load from cookies or use defaults
   const [themePreset, setThemePreset] = useState<ThemePreset>("native-blues")
   const [scale, setScale] = useState<Scale>("")
@@ -84,24 +84,24 @@ export default function SettingsMenu() {
   // Load and apply saved settings immediately on mount
   useEffect(() => {
     setMounted(true)
-    
+
     const savedPreset = (getCookie("themePreset") as ThemePreset) || "native-blues"
     const savedScale = (getCookie("scale") as Scale) || ""
     const savedRadius = (getCookie("radius") as Radius) || ""
-    
+
     setThemePreset(savedPreset)
     setScale(savedScale)
     setRadius(savedRadius)
-    
+
     // Apply immediately
     applyThemePreset(savedPreset)
-    
+
     // Apply scale
     const root = document.documentElement
     const scaleValues = { "": "1", "xs": "0.875", "lg": "1.125" }
     root.style.fontSize = `${parseFloat(scaleValues[savedScale] || "1") * 100}%`
     root.style.setProperty("--spacing", savedScale === "" ? "0.25rem" : `calc(0.25rem * ${scaleValues[savedScale]})`)
-    
+
     // Apply radius
     const radiusValues = { "": "0.5rem", "sm": "0.25rem", "xl": "0.75rem" }
     root.style.setProperty("--radius", radiusValues[savedRadius] || "0.5rem")
@@ -146,12 +146,12 @@ export default function SettingsMenu() {
     setScale("")
     setRadius("")
     setTheme("light")
-    
+
     // Clear cookies
     setCookie("themePreset", "")
     setCookie("scale", "")
     setCookie("radius", "")
-    
+
     // Reset CSS variables
     const root = document.documentElement
     root.style.fontSize = "100%"
@@ -162,14 +162,14 @@ export default function SettingsMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          size="icon"
-          variant="link"
-          className="shadow-none size-8 text-foreground"
-          aria-label="Open settings menu">
-          <IconSettings2 size={16} aria-hidden="true" />
-        </Button>
+      <DropdownMenuTrigger render={(<Button
+        size="icon"
+        variant="link"
+        className="shadow-none size-8 text-foreground"
+        aria-label="Open settings menu">
+        <IconSettings2 size={16} aria-hidden="true" />
+      </Button>)}>
+
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80 p-6" align="end">
         <div className="space-y-6">

@@ -64,13 +64,13 @@ const useVoiceRecordingStore = create<VoiceRecordingStore>((set, get) => ({
                 duration: 0,
                 timerInterval: interval,
             });
-        } catch (error) {
+        } catch {
             alert('Unable to access microphone. Please grant permission and try again.');
         }
     },
 
     stopRecording: () => {
-        const { timerInterval, mediaRecorder, isRecording, audioBlob } = get();
+        const { timerInterval, mediaRecorder, isRecording } = get();
 
         if (!isRecording) return;
 

@@ -102,15 +102,15 @@ function page() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Button variant="ghost" size="sm" asChild>
-                            <Link href="/auth">
-                                Login
-                            </Link>
+                        <Button variant="ghost" size="sm" nativeButton={false} render={(<Link href="/auth">
+                            Login
+                        </Link>)}>
+
                         </Button>
-                        <Button size="sm" asChild>
-                            <Link href="/auth">
-                                Sign Up <IconArrowRight className="ml-2" size={16} />
-                            </Link>
+                        <Button size="sm" nativeButton={false} render={(<Link href="/auth">
+                            Sign Up <IconArrowRight className="ml-2" size={16} />
+                        </Link>)}>
+
                         </Button>
                     </motion.div>
                 </nav>
@@ -152,16 +152,15 @@ function page() {
                         variants={itemVariants}
                         className="flex flex-col sm:flex-row gap-4 mb-12"
                     >
-                        <Button size="lg" className="text-lg px-8 py-6" asChild>
-                            <Link href='/auth'>
-                                Start Chatting Now
-                                <IconArrowRight className="ml-2" size={20} />
-                            </Link>
+                        <Button size="lg" className="text-lg px-8 py-6" nativeButton={false} render={(<Link href='/auth'>
+                            Start Chatting Now
+                            <IconArrowRight className="ml-2" size={20} />
+                        </Link>)}>
+
                         </Button>
-                        <Button size="lg" variant="outline" className="text-lg px-8 py-6" asChild>
-                            <Link href="#features">
-                                Learn More
-                            </Link>
+                        <Button size="lg" variant="outline" className="text-lg px-8 py-6" nativeButton={false} render={(<Link href="#features">
+                            Learn More
+                        </Link>)}>
                         </Button>
                     </motion.div>
 
@@ -325,16 +324,16 @@ function page() {
                                 Join thousands of users already chatting on Milaap
                             </CardDescription>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <Button size="lg" asChild>
-                                    <Link href="/auth">
-                                        Create Account
-                                        <IconArrowRight className="ml-2" size={20} />
-                                    </Link>
+                                <Button size="lg" nativeButton={false} render={(<Link href="/auth">
+                                    Create Account
+                                    <IconArrowRight className="ml-2" size={20} />
+                                </Link>)}>
+
                                 </Button>
-                                <Button size="lg" variant="outline" asChild>
-                                    <Link href="/auth">
-                                        Sign In
-                                    </Link>
+                                <Button size="lg" variant="outline" nativeButton={false} render={(<Link href="/auth">
+                                    Sign In
+                                </Link>)}>
+
                                 </Button>
                             </div>
                         </CardHeader>

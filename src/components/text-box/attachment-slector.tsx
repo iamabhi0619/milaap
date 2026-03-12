@@ -196,25 +196,25 @@ const AttachmentSelector: React.FC<AttachmentSelectorProps> = ({
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <button
-                    disabled={disabled}
-                    className={cn(
-                        'rounded-full p-1.5 transition-all duration-300 ease-out',
-                        'hover:bg-primary/10 hover:text-primary hover:scale-110',
-                        'active:scale-95',
-                        open && 'bg-primary/15 text-primary scale-110 shadow-sm',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                        disabled && 'opacity-50 cursor-not-allowed',
-                        className
-                    )}
-                    aria-label="Attach files"
-                >
-                    <IconPaperclip className={cn(
-                        "size-5 transition-transform duration-300",
-                        open && "rotate-45"
-                    )} />
-                </button>
+            <PopoverTrigger render={(<button
+                disabled={disabled}
+                className={cn(
+                    'rounded-full p-1.5 transition-all duration-300 ease-out',
+                    'hover:bg-primary/10 hover:text-primary hover:scale-110',
+                    'active:scale-95',
+                    open && 'bg-primary/15 text-primary scale-110 shadow-sm',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                    disabled && 'opacity-50 cursor-not-allowed',
+                    className
+                )}
+                aria-label="Attach files"
+            >
+                <IconPaperclip className={cn(
+                    "size-5 transition-transform duration-300",
+                    open && "rotate-45"
+                )} />
+            </button>)}>
+
             </PopoverTrigger>
             <PopoverContent
                 side="top"
@@ -255,8 +255,8 @@ const AttachmentSelector: React.FC<AttachmentSelectorProps> = ({
                         <IconCloudUpload
                             className={cn(
                                 'mx-auto size-10 mb-3 transition-all duration-300',
-                                isDragging 
-                                    ? 'text-primary scale-110 animate-bounce' 
+                                isDragging
+                                    ? 'text-primary scale-110 animate-bounce'
                                     : 'text-muted-foreground group-hover:text-primary group-hover:scale-110'
                             )}
                         />

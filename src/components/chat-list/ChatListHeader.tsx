@@ -32,14 +32,14 @@ export function ChatListHeader({ searchQuery, onSearchChange, onNewChat }: ChatL
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-bold">Chats</h2>
                     <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                                size="icon"
-                                variant="outline"
-                                className="rounded-full h-10 w-10 shadow-sm hover:shadow-md transition-shadow"
-                            >
-                                <Plus className="h-5 w-5" />
-                            </Button>
+                        <PopoverTrigger render={(<Button
+                            size="icon"
+                            variant="outline"
+                            className="rounded-full h-10 w-10 shadow-sm hover:shadow-md transition-shadow"
+                        >
+                            <Plus className="h-5 w-5" />
+                        </Button>)}>
+
                         </PopoverTrigger>
                         <PopoverContent
                             className="w-56 p-2"

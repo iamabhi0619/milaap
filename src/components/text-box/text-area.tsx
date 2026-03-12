@@ -13,12 +13,9 @@ import { cn } from '@/lib/utils';
 import { useAutoScroll } from './useAutoScroll';
 import VoiceRecorder from './voice-recording';
 
-type TextBoxProps = {
-    className?: string;
-    chatId?: string;
-}
 
-const TextBox = (props: TextBoxProps) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const TextBox = (_props: { chatId?: string; className?: string }) => {
     const { text, setText, sendMessage, attachments } = useMessageBoxStore();
     const { isRecording } = useVoiceRecordingStore();
     const hasContent = text?.trim() || (attachments && attachments.length > 0);
