@@ -19,10 +19,6 @@ const ChatTopBarMenu = () => {
                         </p>
                     </div>
                     <div className="grid gap-2">
-
-
-
-
                     </div>
                 </div>
             </PopoverContent>
